@@ -149,6 +149,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.styleMask.remove(.resizable)
     }
     
+    /// Called when the main window is closed.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // Terminate the application when the last window is closed
+        return true
+    }
+    
 }
 
 /// SwiftUI view representing the lyrics interface.
