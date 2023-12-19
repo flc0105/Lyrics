@@ -43,8 +43,13 @@ class LRCParser {
                     let lyricText = line.replacingOccurrences(of: "\\[.*\\]", with: "", options: .regularExpression, range: nil)
                     
                     // Create a LyricInfo instance and add it to the array
-                    let lyricInfo = LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp)
-                    lyrics.append(lyricInfo)
+                    
+                    // Check if lyrics array is not empty and timestamps are the same
+                    if let lastTimestamp = lyrics.last?.playbackTime, timestamp == lastTimestamp {
+                        lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: true))
+                    } else {
+                        lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: false))
+                    }
                 }
             }
         }
@@ -56,6 +61,7 @@ class LRCParser {
     /// Gets the parsed lyrics as an array of LyricInfo.
     /// - Returns: An array of LyricInfo instances representing the lyrics.
     func getLyrics() -> [LyricInfo] {
+        print(lyrics)
         return lyrics
     }
 }
@@ -71,6 +77,7 @@ struct LyricInfo: Identifiable {
     var isCurrent: Bool
     /// The playback time associated with the lyric line.
     var playbackTime: TimeInterval
+    var isTranslation: Bool
 }
 
 /// View model for managing lyrics data.
@@ -106,7 +113,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Initialize the lyrics with a default "Not playing" line
         viewModel.lyrics =  [
-            LyricInfo(id: 0, text: "Not playing", isCurrent: false, playbackTime: 0),
+            LyricInfo(id: 0, text: "Not playing", isCurrent: false, playbackTime: 0, isTranslation: false),
         ]
         
         // Initialize the application
@@ -172,6 +179,9 @@ struct LyricsView: View {
                             Text(lyric.text)
                                 .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
                                 .foregroundColor(lyric.isCurrent ? .blue : .white)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, lyric.isTranslation ? -40 : 20)
+                                .padding(.horizontal, 10)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .id(lyric.id)
                         }
