@@ -40,7 +40,8 @@ class LRCParser {
                     // Calculate the timestamp
                     let timestamp = minutes * 60 + seconds
                     // Extract the lyric text
-                    let lyricText = line.replacingOccurrences(of: "\\[.*\\]", with: "", options: .regularExpression, range: nil)
+//                    let lyricText = line.replacingOccurrences(of: "\\[.*\\]", with: "", options: .regularExpression, range: nil)
+                    let lyricText = line.replacingOccurrences(of: "\\[([0-9]+:[0-9]+.[0-9]+)\\]", with: "", options: .regularExpression, range: nil)
                     
                     // Create a LyricInfo instance and add it to the array
                     
@@ -187,6 +188,7 @@ struct LyricsView: View {
                             Text(lyric.text)
                                 .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
                                 .foregroundColor(lyric.isCurrent ? .blue : .white)
+//                                .opacity(lyric.isCurrent ? 1.0 : 0.5)
                                 .multilineTextAlignment(.center)
                                 .padding(.vertical, lyric.isTranslation ? -40 : 20)
                                 .padding(.horizontal, 10)
