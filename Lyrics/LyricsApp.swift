@@ -61,7 +61,6 @@ class LRCParser {
     /// Gets the parsed lyrics as an array of LyricInfo.
     /// - Returns: An array of LyricInfo instances representing the lyrics.
     func getLyrics() -> [LyricInfo] {
-        print(lyrics)
         return lyrics
     }
 }
@@ -77,6 +76,7 @@ struct LyricInfo: Identifiable {
     var isCurrent: Bool
     /// The playback time associated with the lyric line.
     var playbackTime: TimeInterval
+    /// A boolean indicating whether the lyric is a translation.
     var isTranslation: Bool
 }
 
@@ -84,6 +84,12 @@ struct LyricInfo: Identifiable {
 class LyricsViewModel: ObservableObject {
     /// Published property holding the array of LyricInfo representing the lyrics.
     @Published var lyrics: [LyricInfo] = []
+    
+    /// Shared instance of LyricsViewModel.
+    static let shared = LyricsViewModel()
+    
+    /// Published property holding the current index of the lyrics.
+    @Published var currentIndex: Int = 0
     
     /// Updates the lyrics with a new set of lyrics.
     /// - Parameter newLyrics: The new array of LyricInfo representing the updated lyrics.
@@ -93,13 +99,14 @@ class LyricsViewModel: ObservableObject {
 }
 
 /// The main view model instance for managing lyrics.
-var viewModel = LyricsViewModel()
+//var viewModel = LyricsViewModel()
+var viewModel = LyricsViewModel.shared
 
 /// The start time for tracking the playback time.
 var startTime: TimeInterval = 0
 
 /// A boolean indicating whether the lyrics display is stopped.
-var isStopped: Bool = false
+var isStopped: Bool = true
 
 /// AppDelegate class responsible for managing the application's lifecycle.
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -167,7 +174,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 /// SwiftUI view representing the lyrics interface.
 struct LyricsView: View {
     
-    @State private var currentIndex: Int = 0
+    @ObservedObject var lyricViewModel: LyricsViewModel = LyricsViewModel.shared
+    
     
     var body: some View {
         
@@ -186,19 +194,32 @@ struct LyricsView: View {
                                 .id(lyric.id)
                         }
                     }
-                    .onChange(of: currentIndex) { newValue in
+                    .onChange(of: lyricViewModel.currentIndex) { [oldValue = lyricViewModel.currentIndex] newValue in
+                        
+                        debugPrint("oldValue=\(oldValue), newValue=\(newValue)")
+                        
                         // Scroll to the current lyric's position
                         withAnimation() {
-                            proxy.scrollTo(currentIndex, anchor: .center)
+                            
+                            viewModel.lyrics.indices.forEach { index in
+                                viewModel.lyrics[index].isCurrent = false
+                            }
+                            
+                            if (oldValue > 0 && oldValue < viewModel.lyrics.count) {
+                                viewModel.lyrics[oldValue].isCurrent = true
+                                proxy.scrollTo(oldValue, anchor: .center)
+                            }
+                            
                         }
                     }
                 }
             }
-            .onAppear {
-                startTimer()
-            }
+        }
+        .onAppear {
+            startTimer()
         }
     }
+    
     
     /// Start a timer to update lyrics every second.
     private func startTimer() {
@@ -209,41 +230,74 @@ struct LyricsView: View {
         }
     }
     
+    
     /// Update the lyrics based on the current playback time.
     private func updateLyrics() {
+        // Check if lyrics display is stopped
         guard !isStopped else {
             return
         }
         
+        // Check if the current lyric index is within the array bounds
+        guard lyricViewModel.currentIndex >= 0 && lyricViewModel.currentIndex < viewModel.lyrics.count else {
+            print("Playback is over.")
+            stopLyrics()
+            return
+        }
+        
+        // Calculate the current playback progress
         let currentPlaybackTime = Date().timeIntervalSinceReferenceDate - startTime
         
-        for (index, lyric) in viewModel.lyrics.enumerated() {
-            if currentPlaybackTime >= lyric.playbackTime {
-                currentIndex = index
+        // Get the current lyric
+        let currentLyric = viewModel.lyrics[lyricViewModel.currentIndex]
+        
+        // Check if it's time to display the current lyric
+        if currentPlaybackTime >= currentLyric.playbackTime {
+            debugPrint("currentPlayBackTime=\(currentPlaybackTime), currentLyricPlaybackTime=\(currentLyric.playbackTime), currentIndex=\(lyricViewModel.currentIndex), currentLyricText=\(currentLyric.text)")
+            
+            // Increase the lyric index
+            lyricViewModel.currentIndex += 1
+            
+            // Check if there is a next lyric
+            if lyricViewModel.currentIndex < viewModel.lyrics.count {
+                let nextLyric = viewModel.lyrics[lyricViewModel.currentIndex]
+                
+                // Skip translation lyrics
+                if nextLyric.isTranslation {
+                    updateLyrics()
+                    return
+                }
+                
+                // Calculate the delay time
+                let delay = nextLyric.playbackTime - currentLyric.playbackTime
+                
+                // Use asynchronous delay to continue displaying lyrics
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    // Update the next lyric
+                    updateLyrics()
+                }
             }
         }
-        
-        viewModel.lyrics.indices.forEach { index in
-            viewModel.lyrics[index].isCurrent = (index == currentIndex)
-        }
-        
-        // Check if there is a next lyric
-        let nextIndex = (currentIndex + 1) % viewModel.lyrics.count
-        if nextIndex != currentIndex {
-            let currentLyric = viewModel.lyrics[currentIndex]
-            let nextLyric = viewModel.lyrics[nextIndex]
-            
-            // Calculate the delay time
-            let delay = nextLyric.playbackTime - currentLyric.playbackTime
-            
-            // Use asynchronous delay to continue displaying lyrics
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                // Update the next lyric
-                updateLyrics()
-            }
+    }}
+
+// Find the lyric index corresponding to the specified start time
+private func findStartingLyricIndex(_ startTime: TimeInterval) -> Int {
+    for (index, lyric) in viewModel.lyrics.enumerated() {
+        if lyric.playbackTime >= startTime {
+            return index
         }
     }
-    
+    return -1
+}
+
+/// Update the playback time based on the specified playback time.
+func updatePlaybackTime(playbackTime: TimeInterval) {
+    // Set the start time based on the playback time
+    startTime = Date.timeIntervalSinceReferenceDate - playbackTime
+    // Reset the lyric index to the beginning
+    LyricsViewModel.shared.currentIndex = 0
+    // Find and set the starting lyric index
+    LyricsViewModel.shared.currentIndex = findStartingLyricIndex(playbackTime)
 }
 
 
@@ -251,9 +305,6 @@ struct LyricsView: View {
 func startLyrics() {
     // Record the start time of lyric display
     let lyricStartTime = Date().timeIntervalSinceReferenceDate
-    
-    // Reset the stopped flag
-    isStopped = false
     
     // Retrieve now playing information
     getNowPlayingInfo { nowPlayingInfo in
@@ -278,7 +329,10 @@ func startLyrics() {
         
         // Try to read the contents of the lyrics file
         if let lrcContent = try? String(contentsOfFile: lrcPath) {
-            print("Lyrics file loaded: \(lrcPath)")
+            debugPrint("Lyrics file loaded: \(lrcPath)")
+            
+            // Reset the stopped flag
+            isStopped = false
             
             // Create an LRC parser
             let parser = LRCParser(lrcContent: lrcContent)
@@ -286,11 +340,10 @@ func startLyrics() {
             // Get the parsed lyrics array
             let lyrics = parser.getLyrics()
             
-            // Set the start time for lyrics display
-            startTime = Date().timeIntervalSinceReferenceDate - playbackTime
-            
             // Update the lyrics in the view model
             viewModel.updateLyrics(newLyrics: lyrics)
+            
+            updatePlaybackTime(playbackTime: playbackTime)
             
             // 3 seconds later, update and calibrate the playback time
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -303,20 +356,28 @@ func startLyrics() {
                     // Calculate the time gap
                     let gap = Date().timeIntervalSinceReferenceDate - lyricStartTime
                     updatedPlaybackTime = updatedPlaybackTime + gap
-                    startTime = Date.timeIntervalSinceReferenceDate - updatedPlaybackTime
-                    print("Playback time updated: \(updatedPlaybackTime)")
+                    updatePlaybackTime(playbackTime: updatedPlaybackTime)
+                    debugPrint("Playback time updated: \(updatedPlaybackTime)")
                 }
             }
         } else {
             print("Failed to read LRC file.")
+            
+            // Set the start time and display a default lyric
+            startTime = Date().timeIntervalSinceReferenceDate
+            viewModel.lyrics =  [
+                LyricInfo(id: 0, text: "\(artist) - \(title)", isCurrent: true, playbackTime: 0, isTranslation: false),
+                LyricInfo(id: 1, text: "Lyric not found", isCurrent: false, playbackTime: 1, isTranslation: false),
+            ]
+            
             return
         }
     }
 }
 
+
 /// Stops displaying lyrics for the currently playing track.
 func stopLyrics() {
-    // Set the stopped flag
     isStopped = true
 }
 
@@ -336,6 +397,3 @@ struct LyricsApp: App {
         }
     }
 }
-
-
-

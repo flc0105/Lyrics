@@ -97,7 +97,13 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         let track = "\(artist) - \(title)"
         
         // Check if the current track is nil or if it's the same as the new track
-        if currentTrack == nil || track == currentTrack {
+        
+        if currentTrack == nil {
+            currentTrack = track
+            return
+        }
+        
+        if track == currentTrack {
             return
         } else {
             print("Track change detected: \(String(describing: currentTrack)) -> \(track)")
@@ -107,6 +113,7 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
             getPlaybackState { isPlaying in
                 if isPlaying {
                     // Take action when the playback state is playing
+                    startLyrics()
                 }
             }
         }
