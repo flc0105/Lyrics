@@ -395,5 +395,17 @@ struct LyricsApp: App {
         Settings {
             EmptyView()
         }
+        .commands {
+            CommandMenu("Adjust") {
+                Button("1 second faster") {
+                    startTime = startTime - 1
+                }
+                .keyboardShortcut("+");
+                Button("1 second slower") {
+                    startTime = startTime + 1
+                }
+                .keyboardShortcut("-")
+            }
+        }
     }
 }
