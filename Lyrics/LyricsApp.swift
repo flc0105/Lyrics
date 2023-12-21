@@ -40,7 +40,7 @@ class LRCParser {
                     // Calculate the timestamp
                     let timestamp = minutes * 60 + seconds
                     // Extract the lyric text
-//                    let lyricText = line.replacingOccurrences(of: "\\[.*\\]", with: "", options: .regularExpression, range: nil)
+                    //                    let lyricText = line.replacingOccurrences(of: "\\[.*\\]", with: "", options: .regularExpression, range: nil)
                     let lyricText = line.replacingOccurrences(of: "\\[([0-9]+:[0-9]+.[0-9]+)\\]", with: "", options: .regularExpression, range: nil)
                     
                     // Create a LyricInfo instance and add it to the array
@@ -172,10 +172,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
 }
 
+
+/// Copies the given text to the clipboard.
+/// - Parameter text: The text to be copied.
+private func copyToClipboard(_ text: String) {
+    let pasteboard = NSPasteboard.general
+    pasteboard.clearContents()
+    pasteboard.setString(text, forType: .string)
+    print("Lyrics copied to clipboard: \(text)")
+}
+
 /// SwiftUI view representing the lyrics interface.
 struct LyricsView: View {
     
     @ObservedObject var lyricViewModel: LyricsViewModel = LyricsViewModel.shared
+    @State private var isCopiedAlertPresented: Bool = false
     
     
     var body: some View {
@@ -188,12 +199,16 @@ struct LyricsView: View {
                             Text(lyric.text)
                                 .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
                                 .foregroundColor(lyric.isCurrent ? .blue : .white)
-//                                .opacity(lyric.isCurrent ? 1.0 : 0.5)
+                            //                                .opacity(lyric.isCurrent ? 1.0 : 0.5)
                                 .multilineTextAlignment(.center)
                                 .padding(.vertical, lyric.isTranslation ? -40 : 20)
                                 .padding(.horizontal, 10)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .id(lyric.id)
+                                .onTapGesture {
+                                    copyToClipboard(lyric.text)
+                                    isCopiedAlertPresented = true
+                                }
                         }
                     }
                     .onChange(of: lyricViewModel.currentIndex) { [oldValue = lyricViewModel.currentIndex] newValue in
@@ -219,6 +234,12 @@ struct LyricsView: View {
         }
         .onAppear {
             startTimer()
+        }.alert(isPresented: $isCopiedAlertPresented) {
+            Alert(
+                title: Text("Lyrics Copied"),
+                message: Text("Lyrics text has been copied to the clipboard."),
+                dismissButton: .default(Text("OK"))
+            )
         }
     }
     
@@ -384,6 +405,113 @@ func stopLyrics() {
 }
 
 
+
+
+
+func showAlert(title: String, message: String, firstButtonTitle: String = "OK", onFirstButtonTap: (() -> Void)? = nil, showCancelButton: Bool = false) {
+    let alert = NSAlert()
+    alert.messageText = title
+    alert.informativeText = message
+    alert.addButton(withTitle: firstButtonTitle)
+    
+    if showCancelButton {
+        alert.addButton(withTitle: "Cancel")
+    }
+    
+    let response = alert.runModal()
+    
+    if response == .alertFirstButtonReturn, let onFirstButtonTap = onFirstButtonTap {
+        onFirstButtonTap()
+    }
+}
+
+
+
+func showInputAlert(title: String, message: String, defaultValue: String, onFirstButtonTap: @escaping (String) -> Void) {
+    let alert = NSAlert()
+    alert.messageText = title
+    alert.informativeText = message
+    alert.alertStyle = .informational
+    
+    // 添加输入框
+    let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
+    textField.stringValue = defaultValue
+    alert.accessoryView = textField
+    
+    // 添加按钮
+    alert.addButton(withTitle: "Save")
+    alert.addButton(withTitle: "Cancel")
+    
+    // 处理按钮点击
+    if alert.runModal() == .alertFirstButtonReturn {
+        let inputText = textField.stringValue
+        guard !inputText.isEmpty else {
+            showAlert(title: "Settings Not Saved", message: "Your input is empty.")
+            return
+        }
+        guard inputText != defaultValue else {
+            return  // 与默认值相同，不执行后续操作
+        }
+        onFirstButtonTap(inputText)
+    }
+}
+
+//func showFolderPicker() {
+//    let folderPicker = NSOpenPanel()
+//    folderPicker.title = "Select a Folder"
+//    folderPicker.showsResizeIndicator = true
+//    folderPicker.showsHiddenFiles = false
+//    folderPicker.canChooseDirectories = true
+//    folderPicker.canChooseFiles = false
+//    folderPicker.canCreateDirectories = false
+//    folderPicker.allowsMultipleSelection = false
+//
+//    let response = folderPicker.runModal()
+//
+//    if response == NSApplication.ModalResponse.OK {
+//        // User clicked "OK", get the selected folder URL
+//        if let folderURL = folderPicker.urls.first {
+//            let selectedFolderPath = folderURL.path
+//            print("Selected Folder Path: \(selectedFolderPath)")
+//            // Do something with the selectedFolderPath
+//        }
+//    }
+//}
+
+
+
+import Cocoa
+
+func showFolderPicker(message: String, completion: @escaping (String?) -> Void) {
+    let folderPicker = NSOpenPanel()
+    folderPicker.message = message
+    folderPicker.showsResizeIndicator = true
+    folderPicker.showsHiddenFiles = false
+    folderPicker.canChooseDirectories = true
+    folderPicker.canChooseFiles = false
+    folderPicker.canCreateDirectories = false
+    folderPicker.allowsMultipleSelection = false
+    
+    let response = folderPicker.runModal()
+    
+    if response == NSApplication.ModalResponse.OK {
+        // User clicked "OK", get the selected folder URL
+        if let folderURL = folderPicker.urls.first {
+            let selectedFolderPath = folderURL.path
+            // Execute the completion closure with the selected folder path
+            completion(selectedFolderPath)
+        } else {
+            // No folder selected
+            completion(nil)
+        }
+    } else {
+        // User clicked "Cancel"
+        completion(nil)
+    }
+}
+
+
+
 /// The main entry point for the LyricsApp.
 @main
 struct LyricsApp: App {
@@ -398,16 +526,49 @@ struct LyricsApp: App {
             EmptyView()
         }
         .commands {
-            CommandMenu("Adjust") {
-                Button("1 second faster") {
+            CommandMenu("Calibration") {
+                Button("1 Second Faster") {
                     startTime = startTime - 1
                 }
                 .keyboardShortcut("+");
-                Button("1 second slower") {
+                Button("1 Second Slower") {
                     startTime = startTime + 1
                 }
                 .keyboardShortcut("-")
+            };
+            CommandMenu("Configuration") {
+                Button("Player") {
+                    let storedPlayerName = getStoredPlayerName()
+                    showInputAlert(title: "Configure Player",
+                                   message: "Please enter the app bundle identifier of the player used to register for notifications.",
+                                   defaultValue: storedPlayerName,
+                                   onFirstButtonTap: { inputText in
+                        UserDefaults.standard.set(inputText, forKey: "PlayerPackageName")
+                        showAlert(title: "Settings Saved", message: "Changes will take effect after restarting the application.", firstButtonTitle: "Restart", onFirstButtonTap: {
+                            if let bundleIdentifier = Bundle.main.bundleIdentifier {
+                                let path = "/usr/bin/open"
+                                let arguments = ["-b", bundleIdentifier]
+                                Process.launchedProcess(launchPath: path, arguments: arguments)
+                            }
+                            NSApp.terminate(nil)
+                        }, showCancelButton: true)
+                    })
+                };
+                Button("Lyrics Folder") {
+                    showFolderPicker(message: "Please select the lyrics folder, the current lyrics folder path is: \(getStoredLyricsFolderPath())") { selectedFolderPath in
+                        if var folderPath = selectedFolderPath {
+                            if !folderPath.hasSuffix("/") {
+                                folderPath.append("/")
+                            }
+                            UserDefaults.standard.set(folderPath, forKey: "LyricsFolder")
+                            showAlert(title: "Settings Saved", message: "Lyrics folder has been successfully set: \(getStoredLyricsFolderPath())")
+                        }
+                    }
+                    
+                    
+                }
             }
         }
     }
 }
+

@@ -135,7 +135,7 @@ func getLRCPath(artist: String, title: String) -> String {
     let replacedFileName = fileName.components(separatedBy: illegalCharacters).joined(separator: "_")
     
     // Construct and return the full file path
-    return "/Users/flc/Desktop/Lyrics/\(replacedFileName)"
+    return "\(getStoredLyricsFolderPath())\(replacedFileName)"
 }
 
 /// Enum representing different playback states for a media application.
@@ -172,11 +172,35 @@ func handleNowPlayingApplicationPlaybackStateDidChange(notification: Notificatio
 }
 
 
+func getStoredPlayerName() -> String {
+    
+    // 如果 UserDefaults 不包含键，存储默认值
+    UserDefaults.standard.register(defaults: ["PlayerPackageName": "com.roon.Roon"])
+    
+    // 从 UserDefaults 中获取存储的值
+    return UserDefaults.standard.string(forKey: "PlayerPackageName") ?? ""
+    
+}
+
+func getStoredLyricsFolderPath() -> String {
+    // 如果 UserDefaults 不包含键，存储默认值
+    UserDefaults.standard.register(defaults: ["LyricsFolder": "/Users/flc/Desktop/Lyrics/"])
+    return UserDefaults.standard.string(forKey: "LyricsFolder") ?? ""
+}
+
+
 /// Register notifications for Now Playing info and application playback state changes.
 func registerNotifications() {
     
     // Bundle Identifier of the application to be monitored
-    let targetAppBundleIdentifier = "com.roon.Roon"
+    //    let targetAppBundleIdentifier = "com.roon.Roon"
+    
+    let targetAppBundleIdentifier = getStoredPlayerName()
+    
+    if targetAppBundleIdentifier.isEmpty {
+        print("Player package name not set.")
+        return
+    }
     
     let notificationCenter = NotificationCenter.default
     
