@@ -456,33 +456,7 @@ func showInputAlert(title: String, message: String, defaultValue: String, onFirs
     }
 }
 
-//func showFolderPicker() {
-//    let folderPicker = NSOpenPanel()
-//    folderPicker.title = "Select a Folder"
-//    folderPicker.showsResizeIndicator = true
-//    folderPicker.showsHiddenFiles = false
-//    folderPicker.canChooseDirectories = true
-//    folderPicker.canChooseFiles = false
-//    folderPicker.canCreateDirectories = false
-//    folderPicker.allowsMultipleSelection = false
-//
-//    let response = folderPicker.runModal()
-//
-//    if response == NSApplication.ModalResponse.OK {
-//        // User clicked "OK", get the selected folder URL
-//        if let folderURL = folderPicker.urls.first {
-//            let selectedFolderPath = folderURL.path
-//            print("Selected Folder Path: \(selectedFolderPath)")
-//            // Do something with the selectedFolderPath
-//        }
-//    }
-//}
-
-
-
-import Cocoa
-
-func showFolderPicker(message: String, completion: @escaping (String?) -> Void) {
+func showFolderPicker(message: String, defaultFolderPath: String?, completion: @escaping (String?) -> Void) {
     let folderPicker = NSOpenPanel()
     folderPicker.message = message
     folderPicker.showsResizeIndicator = true
@@ -491,6 +465,12 @@ func showFolderPicker(message: String, completion: @escaping (String?) -> Void) 
     folderPicker.canChooseFiles = false
     folderPicker.canCreateDirectories = false
     folderPicker.allowsMultipleSelection = false
+    
+    
+    // Set default folder path if provided
+    if let defaultPath = defaultFolderPath {
+        folderPicker.directoryURL = URL(fileURLWithPath: defaultPath)
+    }
     
     let response = folderPicker.runModal()
     
@@ -555,7 +535,8 @@ struct LyricsApp: App {
                     })
                 };
                 Button("Lyrics Folder") {
-                    showFolderPicker(message: "Please select the lyrics folder, the current lyrics folder path is: \(getStoredLyricsFolderPath())") { selectedFolderPath in
+                    let storedLyricsFolderPath = getStoredLyricsFolderPath()
+                    showFolderPicker(message: "Please select the lyrics folder, the current lyrics folder path is: \(storedLyricsFolderPath)", defaultFolderPath: storedLyricsFolderPath) { selectedFolderPath in
                         if var folderPath = selectedFolderPath {
                             if !folderPath.hasSuffix("/") {
                                 folderPath.append("/")
