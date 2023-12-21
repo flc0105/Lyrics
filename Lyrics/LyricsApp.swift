@@ -170,6 +170,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
     
+    @objc func toggleWindowSticky(_ sender: Any?) {
+            if let window = NSApplication.shared.keyWindow {
+                window.level = (window.level == .floating) ? .normal : .floating
+            }
+        }
+    
 }
 
 
@@ -584,6 +590,7 @@ struct LyricsApp: App {
             CommandMenu("Configuration") {
                 Button("Player") { handleConfigurePlayer() };
                 Button("Lyrics Folder") { handleConfigureLyricsFolder() }
+                Button("Toggle Sticky") { NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil) }
             }
         }
     }
