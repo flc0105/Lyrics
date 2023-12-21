@@ -56,6 +56,11 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
         nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
+
+        let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
+        let artwork = artworkData.flatMap { NSImage(data: $0) }
+        
+        ImageObject.shared.backgroundImage = artwork
         
         // Call the completion handler with the updated dictionary
         completion(nowPlayingInfo)

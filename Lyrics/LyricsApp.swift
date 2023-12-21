@@ -130,7 +130,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Create and configure the main window
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 300, height: 400),
-            styleMask: [.titled, .closable, .miniaturizable],
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
         
         // Create a visual effect view for the window
@@ -161,8 +161,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.center()
         window.setFrameAutosaveName("LyricsWindow")
         window.makeKeyAndOrderFront(nil)
-        window.styleMask.remove(.resizable)
+        
+        //window.styleMask.remove(.resizable) // Comment this line to allow full-screen
+        
     }
+    
+    
+    /*
+     /// Called when the application finishes launching.
+     func applicationDidFinishLaunching(_ aNotification: Notification) {
+     // Set the start time
+     startTime = Date.timeIntervalSinceReferenceDate
+     
+     // Initialize the lyrics with a default "Not playing" line
+     viewModel.lyrics =  [
+     LyricInfo(id: 0, text: "Not playing", isCurrent: false, playbackTime: 0, isTranslation: false),
+     ]
+     
+     // Initialize the application
+     registerNotifications()
+     
+     // Create and configure the main window
+     window = NSWindow(
+     contentRect: NSRect(x: 0, y: 0, width: 300, height: 400),
+     styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+     backing: .buffered, defer: false)
+     
+     let hostingView = NSHostingView(rootView: LyricsView())
+     hostingView.translatesAutoresizingMaskIntoConstraints = false
+     
+     window.contentView = hostingView
+     window.titlebarAppearsTransparent = true
+     window.styleMask.insert(.fullSizeContentView)
+     window.center()
+     window.setFrameAutosaveName("LyricsWindow")
+     window.makeKeyAndOrderFront(nil)
+     }*/
     
     /// Called when the main window is closed.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -171,10 +205,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func toggleWindowSticky(_ sender: Any?) {
-            if let window = NSApplication.shared.keyWindow {
-                window.level = (window.level == .floating) ? .normal : .floating
-            }
+        if let window = NSApplication.shared.keyWindow {
+            window.level = (window.level == .floating) ? .normal : .floating
         }
+    }
+    
+    @objc func toggleFullScreen(_ sender: Any?) {
+        if let window = NSApplication.shared.keyWindow {
+            window.toggleFullScreen(sender)
+        }
+    }
+    
     
 }
 
@@ -188,16 +229,34 @@ private func copyToClipboard(_ text: String) {
     print("Lyrics copied to clipboard: \(text)")
 }
 
+
+
+class ImageObject: ObservableObject {
+    static let shared = ImageObject()
+    @Published var backgroundImage: NSImage?
+}
+
+
 /// SwiftUI view representing the lyrics interface.
 struct LyricsView: View {
     
     @ObservedObject var lyricViewModel: LyricsViewModel = LyricsViewModel.shared
     @State private var isCopiedAlertPresented: Bool = false
+    @ObservedObject private var imageObject = ImageObject.shared
     
     
     var body: some View {
         
-        VStack {
+        ZStack {
+            if let image = imageObject.backgroundImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .ignoresSafeArea()
+                    .blur(radius: 10)
+                    .opacity(0.6)
+                    .overlay(Color.black.opacity(0.6))
+            }
             ScrollView {
                 ScrollViewReader { proxy in
                     VStack(spacing: 10) {
@@ -205,7 +264,6 @@ struct LyricsView: View {
                             Text(lyric.text)
                                 .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
                                 .foregroundColor(lyric.isCurrent ? .blue : .white)
-                            //                                .opacity(lyric.isCurrent ? 1.0 : 0.5)
                                 .multilineTextAlignment(.center)
                                 .padding(.vertical, lyric.isTranslation ? -40 : 20)
                                 .padding(.horizontal, 10)
@@ -246,8 +304,73 @@ struct LyricsView: View {
                 message: Text("Lyrics text has been copied to the clipboard."),
                 dismissButton: .default(Text("OK"))
             )
-        }
+        }//.background(VisualEffectView().ignoresSafeArea())
     }
+    
+    
+    /*
+     var body: some View {
+     
+     ZStack {
+     if let image = imageObject.backgroundImage {
+     Image(nsImage: image)
+     .resizable()
+     .aspectRatio(contentMode: .fill)
+     .ignoresSafeArea()
+     .blur(radius: 10)
+     .opacity(0.6)
+     .overlay(Color.black.opacity(0.5))
+     }
+     ScrollView {
+     ScrollViewReader { proxy in
+     VStack(spacing: 10) {
+     ForEach(viewModel.lyrics) { lyric in
+     Text(lyric.text)
+     .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
+     .foregroundColor(lyric.isCurrent ? .blue : .white)
+     .multilineTextAlignment(.center)
+     .padding(.vertical, lyric.isTranslation ? -40 : 20)
+     .padding(.horizontal, 10)
+     .frame(maxWidth: .infinity, alignment: .center)
+     .id(lyric.id)
+     .onTapGesture {
+     copyToClipboard(lyric.text)
+     isCopiedAlertPresented = true
+     }
+     }
+     }
+     .onChange(of: lyricViewModel.currentIndex) { [oldValue = lyricViewModel.currentIndex] newValue in
+     
+     debugPrint("oldValue=\(oldValue), newValue=\(newValue)")
+     
+     // Scroll to the current lyric's position
+     withAnimation() {
+     
+     viewModel.lyrics.indices.forEach { index in
+     viewModel.lyrics[index].isCurrent = false
+     }
+     
+     if (oldValue > 0 && oldValue < viewModel.lyrics.count) {
+     viewModel.lyrics[oldValue].isCurrent = true
+     proxy.scrollTo(oldValue, anchor: .center)
+     }
+     
+     }
+     }
+     }
+     }
+     }
+     .onAppear {
+     startTimer()
+     }.alert(isPresented: $isCopiedAlertPresented) {
+     Alert(
+     title: Text("Lyrics Copied"),
+     message: Text("Lyrics text has been copied to the clipboard."),
+     dismissButton: .default(Text("OK"))
+     )
+     }.background(VisualEffectView().ignoresSafeArea())
+     }
+     */
     
     
     /// Start a timer to update lyrics every second.
@@ -519,7 +642,7 @@ func handle1SecondSlower() {
 func handleManualInput() {
     showInputAlert(
         title: "Manual Calibration",
-        message: "Enter the time adjustment value (e.g., +0.5 or -0.5).\nPositive values speed up the playback, and negative values slow down the playback.",
+        message: "Enter the time adjustment value (e.g., +0.5 or -0.5). Positive values speed up the playback, and negative values slow down the playback.",
         defaultValue: "",
         onFirstButtonTap: { input in
             guard let adjustment = TimeInterval(input) else {
@@ -588,9 +711,12 @@ struct LyricsApp: App {
                 Button("Manual Input") { handleManualInput() }
             };
             CommandMenu("Configuration") {
-                Button("Player") { handleConfigurePlayer() };
+                Button("Player") { handleConfigurePlayer() }
                 Button("Lyrics Folder") { handleConfigureLyricsFolder() }
+            }
+            CommandMenu("View") {
                 Button("Toggle Sticky") { NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil) }
+                Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
             }
         }
     }
