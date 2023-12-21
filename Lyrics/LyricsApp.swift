@@ -492,6 +492,7 @@ func showFolderPicker(message: String, defaultFolderPath: String?, completion: @
 
 
 
+
 /// The main entry point for the LyricsApp.
 @main
 struct LyricsApp: App {
@@ -515,6 +516,22 @@ struct LyricsApp: App {
                     startTime = startTime + 1
                 }
                 .keyboardShortcut("-")
+                Button("Manual Input") {
+                        showInputAlert(
+                            title: "Manual Calibration",
+                            message: "Enter the time adjustment value (e.g., +0.5 or -0.5).\nPositive values speed up the playback, and negative values slow down the playback.",
+                            defaultValue: "",
+                            onFirstButtonTap: { input in
+                                guard let adjustment = TimeInterval(input) else {
+                                    showAlert(title: "Invalid Input", message: "Please enter a valid numeric value.")
+                                    return
+                                }
+                                
+                                startTime -= adjustment
+                                showAlert(title: "Calibration", message: "Adjusted start time by \(adjustment) seconds.")
+                            }
+                        )
+                    }
             };
             CommandMenu("Configuration") {
                 Button("Player") {
