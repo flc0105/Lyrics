@@ -406,79 +406,89 @@ func stopLyrics() {
 
 
 
-
-
+// Show an alert with a specified title, message, and optional buttons.
 func showAlert(title: String, message: String, firstButtonTitle: String = "OK", onFirstButtonTap: (() -> Void)? = nil, showCancelButton: Bool = false) {
+    // Create an NSAlert instance
     let alert = NSAlert()
+    // Set the title, informative text, and style of the alert
     alert.messageText = title
     alert.informativeText = message
+    alert.alertStyle = .informational
+    // Add the first button with the specified title
     alert.addButton(withTitle: firstButtonTitle)
     
+    // Add a cancel button if specified
     if showCancelButton {
         alert.addButton(withTitle: "Cancel")
     }
     
+    // Run the modal and handle the response
     let response = alert.runModal()
     
+    // Execute the closure associated with the first button if clicked
     if response == .alertFirstButtonReturn, let onFirstButtonTap = onFirstButtonTap {
         onFirstButtonTap()
     }
 }
 
-
-
+// Show an alert with an input field, allowing the user to input text.
 func showInputAlert(title: String, message: String, defaultValue: String, onFirstButtonTap: @escaping (String) -> Void) {
+    // Create an NSAlert instance
     let alert = NSAlert()
+    // Set the title, informative text, and style of the alert
     alert.messageText = title
     alert.informativeText = message
     alert.alertStyle = .informational
     
-    // 添加输入框
+    // Add an input field to the alert
     let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
     textField.stringValue = defaultValue
     alert.accessoryView = textField
     
-    // 添加按钮
+    // Add Save and Cancel buttons
     alert.addButton(withTitle: "Save")
     alert.addButton(withTitle: "Cancel")
     
-    // 处理按钮点击
+    // Handle button click
     if alert.runModal() == .alertFirstButtonReturn {
+        // Get the input text and execute the closure
         let inputText = textField.stringValue
         guard !inputText.isEmpty else {
             showAlert(title: "Settings Not Saved", message: "Your input is empty.")
             return
         }
         guard inputText != defaultValue else {
-            return  // 与默认值相同，不执行后续操作
+            return  // No action if the input is the same as the default value
         }
         onFirstButtonTap(inputText)
     }
 }
 
+// Show a folder picker dialog and execute a completion closure with the selected folder path.
 func showFolderPicker(message: String, defaultFolderPath: String?, completion: @escaping (String?) -> Void) {
+    // Create an NSOpenPanel instance for folder picking
     let folderPicker = NSOpenPanel()
+    // Set the message and properties of the panel
     folderPicker.message = message
     folderPicker.showsResizeIndicator = true
     folderPicker.showsHiddenFiles = false
     folderPicker.canChooseDirectories = true
     folderPicker.canChooseFiles = false
     folderPicker.canCreateDirectories = false
-    folderPicker.allowsMultipleSelection = false
-    
     
     // Set default folder path if provided
     if let defaultPath = defaultFolderPath {
         folderPicker.directoryURL = URL(fileURLWithPath: defaultPath)
     }
     
+    // Run the panel and handle the response
     let response = folderPicker.runModal()
     
     if response == NSApplication.ModalResponse.OK {
         // User clicked "OK", get the selected folder URL
         if let folderURL = folderPicker.urls.first {
+            // Get the path from the URL and execute the completion closure
             let selectedFolderPath = folderURL.path
-            // Execute the completion closure with the selected folder path
             completion(selectedFolderPath)
         } else {
             // No folder selected
@@ -490,17 +500,74 @@ func showFolderPicker(message: String, defaultFolderPath: String?, completion: @
     }
 }
 
+// Button action methods for calibration
+func handle1SecondFaster() {
+    startTime -= 1
+}
 
+func handle1SecondSlower() {
+    startTime += 1
+}
 
+// Handle manual input for calibration
+func handleManualInput() {
+    showInputAlert(
+        title: "Manual Calibration",
+        message: "Enter the time adjustment value (e.g., +0.5 or -0.5).\nPositive values speed up the playback, and negative values slow down the playback.",
+        defaultValue: "",
+        onFirstButtonTap: { input in
+            guard let adjustment = TimeInterval(input) else {
+                showAlert(title: "Invalid Input", message: "Please enter a valid numeric value.")
+                return
+            }
+            
+            startTime -= adjustment
+            showAlert(title: "Calibration", message: "Adjusted by \(adjustment) seconds.")
+        }
+    )
+}
 
-/// The main entry point for the LyricsApp.
+// Handle configuring the player
+func handleConfigurePlayer() {
+    let storedPlayerName = getStoredPlayerName()
+    showInputAlert(title: "Configure Player",
+                   message: "Please enter the app bundle identifier of the player used to register for notifications.",
+                   defaultValue: storedPlayerName,
+                   onFirstButtonTap: { inputText in
+        UserDefaults.standard.set(inputText, forKey: "PlayerPackageName")
+        showAlert(title: "Settings Saved", message: "Changes will take effect after restarting the application.", firstButtonTitle: "Restart", onFirstButtonTap: {
+            if let bundleIdentifier = Bundle.main.bundleIdentifier {
+                let path = "/usr/bin/open"
+                let arguments = ["-b", bundleIdentifier]
+                Process.launchedProcess(launchPath: path, arguments: arguments)
+            }
+            NSApp.terminate(nil)
+        }, showCancelButton: true)
+    })
+}
+
+// Handle configuring the lyrics folder
+func handleConfigureLyricsFolder() {
+    let storedLyricsFolderPath = getStoredLyricsFolderPath()
+    showFolderPicker(message: "Please select the lyrics folder, the current lyrics folder path is: \(storedLyricsFolderPath)", defaultFolderPath: storedLyricsFolderPath) { selectedFolderPath in
+        if var folderPath = selectedFolderPath {
+            if !folderPath.hasSuffix("/") {
+                folderPath.append("/")
+            }
+            UserDefaults.standard.set(folderPath, forKey: "LyricsFolder")
+            showAlert(title: "Settings Saved", message: "Lyrics folder has been successfully set: \(getStoredLyricsFolderPath())")
+        }
+    }
+}
+
+// The main entry point for the LyricsApp.
 @main
 struct LyricsApp: App {
     
-    /// The app delegate for managing the application's lifecycle.
+    // The app delegate for managing the application's lifecycle.
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    /// The body of the app scene.
+    // The body of the app scene.
     var body: some Scene {
         // Settings scene
         Settings {
@@ -508,65 +575,16 @@ struct LyricsApp: App {
         }
         .commands {
             CommandMenu("Calibration") {
-                Button("1 Second Faster") {
-                    startTime = startTime - 1
-                }
-                .keyboardShortcut("+");
-                Button("1 Second Slower") {
-                    startTime = startTime + 1
-                }
-                .keyboardShortcut("-")
-                Button("Manual Input") {
-                        showInputAlert(
-                            title: "Manual Calibration",
-                            message: "Enter the time adjustment value (e.g., +0.5 or -0.5).\nPositive values speed up the playback, and negative values slow down the playback.",
-                            defaultValue: "",
-                            onFirstButtonTap: { input in
-                                guard let adjustment = TimeInterval(input) else {
-                                    showAlert(title: "Invalid Input", message: "Please enter a valid numeric value.")
-                                    return
-                                }
-                                
-                                startTime -= adjustment
-                                showAlert(title: "Calibration", message: "Adjusted start time by \(adjustment) seconds.")
-                            }
-                        )
-                    }
+                Button("1 Second Faster") { handle1SecondFaster() }
+                    .keyboardShortcut("+");
+                Button("1 Second Slower") { handle1SecondSlower() }
+                    .keyboardShortcut("-")
+                Button("Manual Input") { handleManualInput() }
             };
             CommandMenu("Configuration") {
-                Button("Player") {
-                    let storedPlayerName = getStoredPlayerName()
-                    showInputAlert(title: "Configure Player",
-                                   message: "Please enter the app bundle identifier of the player used to register for notifications.",
-                                   defaultValue: storedPlayerName,
-                                   onFirstButtonTap: { inputText in
-                        UserDefaults.standard.set(inputText, forKey: "PlayerPackageName")
-                        showAlert(title: "Settings Saved", message: "Changes will take effect after restarting the application.", firstButtonTitle: "Restart", onFirstButtonTap: {
-                            if let bundleIdentifier = Bundle.main.bundleIdentifier {
-                                let path = "/usr/bin/open"
-                                let arguments = ["-b", bundleIdentifier]
-                                Process.launchedProcess(launchPath: path, arguments: arguments)
-                            }
-                            NSApp.terminate(nil)
-                        }, showCancelButton: true)
-                    })
-                };
-                Button("Lyrics Folder") {
-                    let storedLyricsFolderPath = getStoredLyricsFolderPath()
-                    showFolderPicker(message: "Please select the lyrics folder, the current lyrics folder path is: \(storedLyricsFolderPath)", defaultFolderPath: storedLyricsFolderPath) { selectedFolderPath in
-                        if var folderPath = selectedFolderPath {
-                            if !folderPath.hasSuffix("/") {
-                                folderPath.append("/")
-                            }
-                            UserDefaults.standard.set(folderPath, forKey: "LyricsFolder")
-                            showAlert(title: "Settings Saved", message: "Lyrics folder has been successfully set: \(getStoredLyricsFolderPath())")
-                        }
-                    }
-                    
-                    
-                }
+                Button("Player") { handleConfigurePlayer() };
+                Button("Lyrics Folder") { handleConfigureLyricsFolder() }
             }
         }
     }
 }
-

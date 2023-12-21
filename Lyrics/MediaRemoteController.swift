@@ -172,18 +172,22 @@ func handleNowPlayingApplicationPlaybackStateDidChange(notification: Notificatio
 }
 
 
+/// Retrieves the stored player name from UserDefaults.
+///
+/// If the player name is not found in UserDefaults, it registers a default value ("com.roon.Roon").
+///
+/// - Returns: The stored player name, or the default value if not found.
 func getStoredPlayerName() -> String {
-    
-    // 如果 UserDefaults 不包含键，存储默认值
     UserDefaults.standard.register(defaults: ["PlayerPackageName": "com.roon.Roon"])
-    
-    // 从 UserDefaults 中获取存储的值
     return UserDefaults.standard.string(forKey: "PlayerPackageName") ?? ""
-    
 }
 
+/// Retrieves the stored lyrics folder path from UserDefaults.
+///
+/// If the folder path is not found in UserDefaults, it registers a default value ("/Users/flc/Desktop/Lyrics/").
+///
+/// - Returns: The stored lyrics folder path, or the default value if not found.
 func getStoredLyricsFolderPath() -> String {
-    // 如果 UserDefaults 不包含键，存储默认值
     UserDefaults.standard.register(defaults: ["LyricsFolder": "/Users/flc/Desktop/Lyrics/"])
     return UserDefaults.standard.string(forKey: "LyricsFolder") ?? ""
 }
@@ -191,10 +195,9 @@ func getStoredLyricsFolderPath() -> String {
 
 /// Register notifications for Now Playing info and application playback state changes.
 func registerNotifications() {
-    
-    // Bundle Identifier of the application to be monitored
     //    let targetAppBundleIdentifier = "com.roon.Roon"
     
+    // Bundle Identifier of the application to be monitored
     let targetAppBundleIdentifier = getStoredPlayerName()
     
     if targetAppBundleIdentifier.isEmpty {
