@@ -240,6 +240,11 @@ func getStoredLyricsFolderPath() -> String {
     return UserDefaults.standard.string(forKey: "LyricsFolder") ?? ""
 }
 
+func getStoredIsCoverImageVisible() -> Bool {
+    UserDefaults.standard.register(defaults: ["IsCoverImageVisible": false])
+    return UserDefaults.standard.bool(forKey: "IsCoverImageVisible")
+}
+
 
 /// Register notifications for Now Playing info and application playback state changes.
 func registerNotifications() {

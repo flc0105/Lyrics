@@ -234,7 +234,8 @@ private func copyToClipboard(_ text: String) {
 class ImageObject: ObservableObject {
     static let shared = ImageObject()
     @Published var backgroundImage: NSImage?
-    @Published var isCoverImageVisible: Bool = false
+//    @Published var isCoverImageVisible: Bool = false
+    @Published var isCoverImageVisible: Bool = getStoredIsCoverImageVisible()
 }
 
 
@@ -259,9 +260,9 @@ struct LyricsView: View {
                         .clipped()
                         .ignoresSafeArea()
 //                        .id(UUID())
-                        .blur(radius: 10)
+                        .blur(radius: 5)
                         .opacity(0.6)
-                        .overlay(Color.black.opacity(0.6))
+                        .overlay(Color.black.opacity(0.5))
 //                        .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.5)))
                 }
             }
@@ -527,7 +528,7 @@ func startLyrics() {
             startTime = Date().timeIntervalSinceReferenceDate
             viewModel.lyrics =  [
                 LyricInfo(id: 0, text: "\(artist) - \(title)", isCurrent: true, playbackTime: 0, isTranslation: false),
-                LyricInfo(id: 1, text: "Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found", isCurrent: false, playbackTime: 1, isTranslation: false),
+                LyricInfo(id: 1, text: "Lyrics not found.", isCurrent: false, playbackTime: 1, isTranslation: false),
             ]
             
             return
@@ -736,8 +737,10 @@ struct LyricsApp: App {
                         debugPrint("isCoverImageVisible=\(imageObject.isCoverImageVisible)")
                         if (!imageObject.isCoverImageVisible) {
                             imageObject.backgroundImage = nil
+                            UserDefaults.standard.set(false, forKey: "IsCoverImageVisible")
                         } else {
                             updateAlbumCover()
+                            UserDefaults.standard.set(true, forKey: "IsCoverImageVisible")
                         }
                     }
                 ))
