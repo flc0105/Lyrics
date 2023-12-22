@@ -113,7 +113,7 @@ var isStopped: Bool = true
 class AppDelegate: NSObject, NSApplicationDelegate {
     /// The main window of the application.
     var window: NSWindow!
-    
+
     /// Called when the application finishes launching.
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Set the start time
@@ -207,6 +207,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleWindowSticky(_ sender: Any?) {
         if let window = NSApplication.shared.keyWindow {
             window.level = (window.level == .floating) ? .normal : .floating
+            ImageObject.shared.isWindowSticky = (window.level == .floating)
         }
     }
     
@@ -236,6 +237,7 @@ class ImageObject: ObservableObject {
     @Published var backgroundImage: NSImage?
 //    @Published var isCoverImageVisible: Bool = false
     @Published var isCoverImageVisible: Bool = getStoredIsCoverImageVisible()
+    @Published var isWindowSticky: Bool = false
 }
 
 
@@ -698,6 +700,9 @@ func handleConfigureLyricsFolder() {
     }
 }
 
+
+
+
 // The main entry point for the LyricsApp.
 @main
 struct LyricsApp: App {
@@ -726,8 +731,17 @@ struct LyricsApp: App {
                 Button("Lyrics Folder") { handleConfigureLyricsFolder() }
             }
             CommandMenu("View") {
-                Button("Toggle Sticky") { NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil) }
-                Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
+                Toggle("Toggle Sticky", isOn: Binding<Bool>(
+                    get: {
+                        return imageObject.isWindowSticky
+                    },
+                    set: { isEnabled in
+                        imageObject.isWindowSticky = isEnabled
+                        NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil)
+                        debugPrint("isWindowSticky=\(imageObject.isWindowSticky)")
+                    }
+                ))
+//                Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
                 Toggle("Show Album Cover", isOn: Binding<Bool>(
                     get: {
                         return imageObject.isCoverImageVisible
@@ -744,6 +758,8 @@ struct LyricsApp: App {
                         }
                     }
                 ))
+
+
             }
         }
     }
