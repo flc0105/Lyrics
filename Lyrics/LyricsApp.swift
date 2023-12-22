@@ -159,6 +159,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         window.center()
+
+        window.isMovableByWindowBackground = true
         window.setFrameAutosaveName("LyricsWindow")
         window.makeKeyAndOrderFront(nil)
         
