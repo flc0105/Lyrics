@@ -258,11 +258,11 @@ struct LyricsView: View {
                         .frame(width: geometry.size.width, height:geometry.size.height + geometry.safeAreaInsets.top, alignment: .center)
                         .clipped()
                         .ignoresSafeArea()
-                        .id(Int.random(in: 0..<3))
+//                        .id(UUID())
                         .blur(radius: 10)
                         .opacity(0.6)
                         .overlay(Color.black.opacity(0.6))
-                        .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.5)))
+//                        .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.5)))
                 }
             }
             ScrollView {
