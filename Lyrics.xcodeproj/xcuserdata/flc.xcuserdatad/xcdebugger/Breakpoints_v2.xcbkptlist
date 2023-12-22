@@ -30,8 +30,8 @@
             filePath = "Lyrics/MediaRemoteController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "193"
-            endingLineNumber = "193"
+            startingLineNumber = "211"
+            endingLineNumber = "211"
             landmarkName = "handleNowPlayingApplicationPlaybackStateDidChange(notification:)"
             landmarkType = "9">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "Lyrics/LyricsApp.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "461"
-            endingLineNumber = "461"
+            startingLineNumber = "467"
+            endingLineNumber = "467"
             landmarkName = "startLyrics()"
             landmarkType = "9">
             <Locations>

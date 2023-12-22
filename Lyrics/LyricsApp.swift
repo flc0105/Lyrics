@@ -249,15 +249,21 @@ struct LyricsView: View {
     var body: some View {
         
         ZStack {
-            if let image = imageObject.backgroundImage {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .ignoresSafeArea()
-                    .blur(radius: 10)
-                    .opacity(0.6)
-                    .overlay(Color.black.opacity(0.6))
-                    .animation(.easeInOut)
+            GeometryReader { geometry in
+                if let image = imageObject.backgroundImage {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height:geometry.size.height + geometry.safeAreaInsets.top, alignment: .center)
+                        .clipped()
+                        .ignoresSafeArea()
+                        .id(Int.random(in: 0..<3))
+                        .blur(radius: 10)
+                        .opacity(0.6)
+                        .overlay(Color.black.opacity(0.6))
+                        .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.5)))
+                }
             }
             ScrollView {
                 ScrollViewReader { proxy in
@@ -521,7 +527,7 @@ func startLyrics() {
             startTime = Date().timeIntervalSinceReferenceDate
             viewModel.lyrics =  [
                 LyricInfo(id: 0, text: "\(artist) - \(title)", isCurrent: true, playbackTime: 0, isTranslation: false),
-                LyricInfo(id: 1, text: "Lyric not found", isCurrent: false, playbackTime: 1, isTranslation: false),
+                LyricInfo(id: 1, text: "Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found.Lyric not found", isCurrent: false, playbackTime: 1, isTranslation: false),
             ]
             
             return
@@ -700,8 +706,6 @@ struct LyricsApp: App {
     
     @ObservedObject private var imageObject = ImageObject.shared
     
-    @State private var isOn:Bool = false
-    
     // The body of the app scene.
     var body: some Scene {
         // Settings scene
@@ -724,19 +728,19 @@ struct LyricsApp: App {
                 Button("Toggle Sticky") { NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil) }
                 Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
                 Toggle("Show Album Cover", isOn: Binding<Bool>(
-                      get: {
-                          return imageObject.isCoverImageVisible
-                      },
-                      set: { isEnabled in
-                          imageObject.isCoverImageVisible = isEnabled
-                          debugPrint("isCoverImageVisible=\(imageObject.isCoverImageVisible)")
-                          if (!imageObject.isCoverImageVisible) {
-                              imageObject.backgroundImage = nil
-                          } else {
-                              updateAlbumCover()
-                          }
-                      }
-                   ))
+                    get: {
+                        return imageObject.isCoverImageVisible
+                    },
+                    set: { isEnabled in
+                        imageObject.isCoverImageVisible = isEnabled
+                        debugPrint("isCoverImageVisible=\(imageObject.isCoverImageVisible)")
+                        if (!imageObject.isCoverImageVisible) {
+                            imageObject.backgroundImage = nil
+                        } else {
+                            updateAlbumCover()
+                        }
+                    }
+                ))
             }
         }
     }

@@ -58,9 +58,19 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
         
         if (ImageObject.shared.isCoverImageVisible) {
+            
             let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
             let artwork = artworkData.flatMap { NSImage(data: $0) }
-            ImageObject.shared.backgroundImage = artwork
+            
+            if (artwork == nil) {
+                debugPrint("Artwork is nil.")
+                //                ImageObject.shared.backgroundImage = nil
+            } else if (artwork?.tiffRepresentation == ImageObject.shared.backgroundImage?.tiffRepresentation) {
+                debugPrint("Artwork has not changed, skipped.")
+            } else {
+                debugPrint("Artwork change detected, updated.")
+                ImageObject.shared.backgroundImage = artwork
+            }
         }
         
         // Call the completion handler with the updated dictionary
@@ -70,8 +80,9 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
 
 
 
+/// Updates the album cover based on the currently playing media information.
 func updateAlbumCover() {
-
+    
     // Call the Media Remote framework to get now playing information
     MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main) { information in
         
@@ -81,12 +92,19 @@ func updateAlbumCover() {
             return
         }
         
+        // Check if the cover image visibility is enabled
         if (ImageObject.shared.isCoverImageVisible) {
+            
+            // Extract the artwork data from the now playing information
             let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
+            
+            // Create an NSImage from the artwork data
             let artwork = artworkData.flatMap { NSImage(data: $0) }
+            
+            // Set the background image in the shared ImageObject
             ImageObject.shared.backgroundImage = artwork
         }
-    
+        
     }
 }
 
