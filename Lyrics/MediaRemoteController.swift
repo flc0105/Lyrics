@@ -56,16 +56,41 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
         nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
-
-        let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
-        let artwork = artworkData.flatMap { NSImage(data: $0) }
         
-        ImageObject.shared.backgroundImage = artwork
+        if (ImageObject.shared.isCoverImageVisible) {
+            let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
+            let artwork = artworkData.flatMap { NSImage(data: $0) }
+            ImageObject.shared.backgroundImage = artwork
+        }
         
         // Call the completion handler with the updated dictionary
         completion(nowPlayingInfo)
     }
 }
+
+
+
+func updateAlbumCover() {
+
+    // Call the Media Remote framework to get now playing information
+    MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main) { information in
+        
+        // Check if the information is empty
+        if information.isEmpty {
+            print("Could not find the specified now playing client")
+            return
+        }
+        
+        if (ImageObject.shared.isCoverImageVisible) {
+            let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
+            let artwork = artworkData.flatMap { NSImage(data: $0) }
+            ImageObject.shared.backgroundImage = artwork
+        }
+    
+    }
+}
+
+
 
 
 /// Retrieves the playback state of the currently playing media application.

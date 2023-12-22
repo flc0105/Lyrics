@@ -162,7 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.setFrameAutosaveName("LyricsWindow")
         window.makeKeyAndOrderFront(nil)
         
-        //window.styleMask.remove(.resizable) // Comment this line to allow full-screen
+        window.styleMask.remove(.resizable) // Comment this line to allow full-screen
         
     }
     
@@ -234,6 +234,7 @@ private func copyToClipboard(_ text: String) {
 class ImageObject: ObservableObject {
     static let shared = ImageObject()
     @Published var backgroundImage: NSImage?
+    @Published var isCoverImageVisible: Bool = false
 }
 
 
@@ -256,6 +257,7 @@ struct LyricsView: View {
                     .blur(radius: 10)
                     .opacity(0.6)
                     .overlay(Color.black.opacity(0.6))
+                    .animation(.easeInOut)
             }
             ScrollView {
                 ScrollViewReader { proxy in
@@ -570,7 +572,7 @@ func showInputAlert(title: String, message: String, defaultValue: String, onFirs
     alert.alertStyle = .informational
     
     // Add an input field to the alert
-    let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
+    let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 220, height: 24))
     textField.stringValue = defaultValue
     alert.accessoryView = textField
     
@@ -639,7 +641,7 @@ func handle1SecondSlower() {
 }
 
 // Handle manual input for calibration
-func handleManualInput() {
+func handleManualCalibration() {
     showInputAlert(
         title: "Manual Calibration",
         message: "Enter the time adjustment value (e.g., +0.5 or -0.5). Positive values speed up the playback, and negative values slow down the playback.",
@@ -696,6 +698,10 @@ struct LyricsApp: App {
     // The app delegate for managing the application's lifecycle.
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
+    @ObservedObject private var imageObject = ImageObject.shared
+    
+    @State private var isOn:Bool = false
+    
     // The body of the app scene.
     var body: some Scene {
         // Settings scene
@@ -708,7 +714,7 @@ struct LyricsApp: App {
                     .keyboardShortcut("+");
                 Button("1 Second Slower") { handle1SecondSlower() }
                     .keyboardShortcut("-")
-                Button("Manual Input") { handleManualInput() }
+                Button("Manual Calibration") { handleManualCalibration() }
             };
             CommandMenu("Configuration") {
                 Button("Player") { handleConfigurePlayer() }
@@ -717,6 +723,20 @@ struct LyricsApp: App {
             CommandMenu("View") {
                 Button("Toggle Sticky") { NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil) }
                 Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
+                Toggle("Show Album Cover", isOn: Binding<Bool>(
+                      get: {
+                          return imageObject.isCoverImageVisible
+                      },
+                      set: { isEnabled in
+                          imageObject.isCoverImageVisible = isEnabled
+                          debugPrint("isCoverImageVisible=\(imageObject.isCoverImageVisible)")
+                          if (!imageObject.isCoverImageVisible) {
+                              imageObject.backgroundImage = nil
+                          } else {
+                              updateAlbumCover()
+                          }
+                      }
+                   ))
             }
         }
     }
