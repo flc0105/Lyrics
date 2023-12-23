@@ -113,7 +113,7 @@ var isStopped: Bool = true
 class AppDelegate: NSObject, NSApplicationDelegate {
     /// The main window of the application.
     var window: NSWindow!
-
+    
     /// Called when the application finishes launching.
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Set the start time
@@ -159,7 +159,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         window.center()
-
+        
         window.isMovableByWindowBackground = true
         window.setFrameAutosaveName("LyricsWindow")
         window.makeKeyAndOrderFront(nil)
@@ -237,9 +237,10 @@ private func copyToClipboard(_ text: String) {
 class ImageObject: ObservableObject {
     static let shared = ImageObject()
     @Published var backgroundImage: NSImage?
-//    @Published var isCoverImageVisible: Bool = false
     @Published var isCoverImageVisible: Bool = getStoredIsCoverImageVisible()
+    @Published var isPlaybackProgressVisible: Bool = getStoredIsPlaybackProgressVisible()
     @Published var isWindowSticky: Bool = false
+    @Published var playbackProgress: TimeInterval = 0
 }
 
 
@@ -249,6 +250,8 @@ struct LyricsView: View {
     @ObservedObject var lyricViewModel: LyricsViewModel = LyricsViewModel.shared
     @State private var isCopiedAlertPresented: Bool = false
     @ObservedObject private var imageObject = ImageObject.shared
+    
+    @State private var isHovered = false
     
     
     var body: some View {
@@ -263,11 +266,11 @@ struct LyricsView: View {
                         .frame(width: geometry.size.width, height:geometry.size.height + geometry.safeAreaInsets.top, alignment: .center)
                         .clipped()
                         .ignoresSafeArea()
-//                        .id(UUID())
+                    //                        .id(UUID())
                         .blur(radius: 5)
                         .opacity(0.6)
                         .overlay(Color.black.opacity(0.5))
-//                        .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.5)))
+                    //                        .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.5)))
                 }
             }
             ScrollView {
@@ -308,10 +311,30 @@ struct LyricsView: View {
                     }
                 }
             }
+            if isHovered && imageObject.isPlaybackProgressVisible && imageObject.playbackProgress != 0 {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Text(formatTimeInterval(imageObject.playbackProgress))
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.8))
+                            .padding(6)
+                            .background(Color.black.opacity(0.2))
+                            .cornerRadius(6)
+                            .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.3)))
+                    }
+                }
+                .padding()
+            }
         }
         .onAppear {
             startTimer()
-        }.alert(isPresented: $isCopiedAlertPresented) {
+        }
+        .onHover { hovering in
+            isHovered = hovering
+        }
+        .alert(isPresented: $isCopiedAlertPresented) {
             Alert(
                 title: Text("Lyrics Copied"),
                 message: Text("Lyrics text has been copied to the clipboard."),
@@ -413,6 +436,9 @@ struct LyricsView: View {
         // Calculate the current playback progress
         let currentPlaybackTime = Date().timeIntervalSinceReferenceDate - startTime
         
+//        playbackProgress = formatTimeInterval(currentPlaybackTime)
+        imageObject.playbackProgress = currentPlaybackTime
+        
         // Get the current lyric
         let currentLyric = viewModel.lyrics[lyricViewModel.currentIndex]
         
@@ -444,6 +470,14 @@ struct LyricsView: View {
             }
         }
     }}
+
+
+func formatTimeInterval(_ timeInterval: TimeInterval) -> String {
+    let minutes = Int(timeInterval / 60)
+    let seconds = Int(timeInterval.truncatingRemainder(dividingBy: 60))
+    return String(format: "%02d:%02d", minutes, seconds)
+}
+
 
 // Find the lyric index corresponding to the specified start time
 private func findStartingLyricIndex(_ startTime: TimeInterval) -> Int {
@@ -544,6 +578,7 @@ func startLyrics() {
 /// Stops displaying lyrics for the currently playing track.
 func stopLyrics() {
     isStopped = true
+    ImageObject.shared.playbackProgress = 0
 }
 
 
@@ -656,7 +691,7 @@ func handleManualCalibration() {
     showInputAlert(
         title: "Manual Calibration",
         message: "Enter the time adjustment value (e.g., +0.5 or -0.5). Positive values speed up the playback, and negative values slow down the playback.",
-        defaultValue: "",
+        defaultValue: "-1.5",
         onFirstButtonTap: { input in
             guard let adjustment = TimeInterval(input) else {
                 showAlert(title: "Invalid Input", message: "Please enter a valid numeric value.")
@@ -743,7 +778,7 @@ struct LyricsApp: App {
                         debugPrint("isWindowSticky=\(imageObject.isWindowSticky)")
                     }
                 ))
-//                Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
+                //                Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
                 Toggle("Show Album Cover", isOn: Binding<Bool>(
                     get: {
                         return imageObject.isCoverImageVisible
@@ -760,8 +795,20 @@ struct LyricsApp: App {
                         }
                     }
                 ))
-
-
+                Toggle("Show Playback Progress", isOn: Binding<Bool>(
+                    get: {
+                        return imageObject.isPlaybackProgressVisible
+                    },
+                    set: { isEnabled in
+                        imageObject.isPlaybackProgressVisible = isEnabled
+                        debugPrint("isPlaybackProgressVisible=\(imageObject.isPlaybackProgressVisible)")
+                        if (!imageObject.isPlaybackProgressVisible) {
+                            UserDefaults.standard.set(false, forKey: "IsPlaybackProgressVisible")
+                        } else {
+                            UserDefaults.standard.set(true, forKey: "IsPlaybackProgressVisible")
+                        }
+                    }
+                ))
             }
         }
     }

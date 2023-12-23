@@ -245,6 +245,11 @@ func getStoredIsCoverImageVisible() -> Bool {
     return UserDefaults.standard.bool(forKey: "IsCoverImageVisible")
 }
 
+func getStoredIsPlaybackProgressVisible() -> Bool {
+    UserDefaults.standard.register(defaults: ["IsPlaybackProgressVisible": true])
+    return UserDefaults.standard.bool(forKey: "IsPlaybackProgressVisible")
+}
+
 
 /// Register notifications for Now Playing info and application playback state changes.
 func registerNotifications() {
