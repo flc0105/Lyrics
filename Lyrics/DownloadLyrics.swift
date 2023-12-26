@@ -59,12 +59,49 @@ func download(id: String, completion: @escaping (String?) -> Void) {
                 let lrcItems = parseLyric(lrcText)
                 let tlyricItems = parseLyric(tlyricText)
                 
+//                // Combine and sort lyric items based on timestamp.
+//                let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
+//                
+//                // Generate a string representation of the combined and sorted lyric items.
+////                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
+//                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
+
+                
+//                // Combine and sort lyric items based on timestamp.
+//                let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
+//
+//                // Remove duplicate entries with the same timestamp and empty content.
+//                let uniqueItems = combinedItems.filter { item in
+//                    let matchingEmptyItems = combinedItems.filter { $0.timestamp == item.timestamp && $0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+//                    return matchingEmptyItems.count <= 1
+//                }
+//
+//                // Generate a string representation of the combined and sorted lyric items.
+//                let combinedLyrics = uniqueItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
+                
                 // Combine and sort lyric items based on timestamp.
                 let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
-                
-                // Generate a string representation of the combined and sorted lyric items.
-//                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
-                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
+
+                // Create a set to keep track of seen timestamps with empty content.
+                var seenEmptyTimestamps = Set<TimeInterval>()
+
+                // Filter and process lyric items.
+                let processedItems = combinedItems.filter { item in
+                    // Check if the content is empty or has been seen before.
+                    let isContentEmpty = item.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    let isTimestampSeen = seenEmptyTimestamps.contains(item.timestamp)
+
+                    // Update the set and keep the item if the content is not empty or it's the first empty content for this timestamp.
+                    if !isContentEmpty || !isTimestampSeen {
+                        seenEmptyTimestamps.insert(item.timestamp)
+                        return true
+                    } else {
+                        return false
+                    }
+                }
+
+                // Generate a string representation of the processed lyric items.
+                let combinedLyrics = processedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
 
                 
                 // Return the result through the completion closure.
