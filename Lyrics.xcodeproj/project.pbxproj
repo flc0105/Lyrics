@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6C0BD1162B343DF6009938B2 /* VisualEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BD1152B343DF6009938B2 /* VisualEffectView.swift */; };
 		6C1C371A2B3151E10040A77D /* LyricsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1C37192B3151E10040A77D /* LyricsApp.swift */; };
 		6C1C371E2B3151E20040A77D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C1C371D2B3151E20040A77D /* Assets.xcassets */; };
 		6C1C37212B3151E20040A77D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C1C37202B3151E20040A77D /* Preview Assets.xcassets */; };
@@ -17,7 +16,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6C0BD1152B343DF6009938B2 /* VisualEffectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualEffectView.swift; sourceTree = "<group>"; };
 		6C1C37162B3151E10040A77D /* Lyrics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lyrics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C1C37192B3151E10040A77D /* LyricsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsApp.swift; sourceTree = "<group>"; };
 		6C1C371D2B3151E20040A77D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -63,7 +61,6 @@
 				6C1C37222B3151E20040A77D /* Lyrics.entitlements */,
 				6C1C371F2B3151E20040A77D /* Preview Content */,
 				6C1C37282B3152DB0040A77D /* MediaRemoteController.swift */,
-				6C0BD1152B343DF6009938B2 /* VisualEffectView.swift */,
 				6C96D6162B396F8F00C0CD1F /* SearchLyrics.swift */,
 				6CC35AC82B3A63FB00C12D1E /* DownloadLyrics.swift */,
 			);
@@ -152,7 +149,6 @@
 				6C96D6172B396F8F00C0CD1F /* SearchLyrics.swift in Sources */,
 				6C1C371A2B3151E10040A77D /* LyricsApp.swift in Sources */,
 				6CC35AC92B3A63FB00C12D1E /* DownloadLyrics.swift in Sources */,
-				6C0BD1162B343DF6009938B2 /* VisualEffectView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -26,7 +26,7 @@ func download(id: String, artist: String, title: String, album: String, completi
     var urlComponents = URLComponents(string: urlString)
     urlComponents?.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
     guard let url = urlComponents?.url else {
-        print("Invalid URL")
+        debugPrint("Invalid URL")
         completion(nil)
         return
     }
@@ -35,7 +35,7 @@ func download(id: String, artist: String, title: String, album: String, completi
     let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
         // Handle any error that occurred during the data task.
         if let error = error {
-            print("Error: \(error)")
+            debugPrint("Error: \(error)")
             completion(nil)
             return
         }
@@ -43,7 +43,7 @@ func download(id: String, artist: String, title: String, album: String, completi
         do {
             // Ensure that data was received.
             guard let data = data else {
-                print("No data received")
+                debugPrint("No data received")
                 completion(nil)
                 return
             }
@@ -55,18 +55,9 @@ func download(id: String, artist: String, title: String, album: String, completi
             if let lrc = json?["lrc"] as? [String: Any], let lrcText = lrc["lyric"] as? String,
                let tlyric = json?["tlyric"] as? [String: Any], let tlyricText = tlyric["lyric"] as? String {
                 
-                
                 // Parse lyric text into LyricItem objects.
                 let lrcItems = parseLyric(lrcText)
                 let tlyricItems = parseLyric(tlyricText)
-                
-                //                // Combine and sort lyric items based on timestamp.
-                //                let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
-                //                
-                //                // Generate a string representation of the combined and sorted lyric items.
-                ////                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
-                //                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
-                
                 
                 // Combine and sort lyric items based on timestamp.
                 let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
@@ -90,34 +81,30 @@ func download(id: String, artist: String, title: String, album: String, completi
                 }
                 
                 // Generate a string representation of the processed lyric items.
-                let combinedLyrics = processedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
+                var combinedLyrics = processedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))]\($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
                 
-                var tag = "[ar:\(artist)]\n[ti:\(title)]\n[al:\(album)]\n"
-                
-                var combinedLyricsWithUser = combinedLyrics
-                
-                //                var tag: String = ""
+                var idTags = "[ar:\(artist)]\n[ti:\(title)]\n[al:\(album)]\n"
                 
                 // Check if the lyricUser and transUser information is available.
                 if let lyricUser = json?["lyricUser"] as? [String: Any], let lyricUserNickname = lyricUser["nickname"] as? String {
-                    tag += "[by:\(lyricUserNickname)]\n"
+                    idTags += "[by:\(lyricUserNickname)]\n"
                 }
                 
                 if  let transUser = json?["transUser"] as? [String: Any], let transUserNickname = transUser["nickname"] as? String {
-                    tag += "[trans:\(transUserNickname)]\n"
+                    idTags += "[trans:\(transUserNickname)]\n"
                 }
                 
-                // Insert user information text at the beginning of combinedLyrics.
-                combinedLyricsWithUser = tag + combinedLyrics
+                // Insert ID tags at the beginning of combinedLyrics.
+                combinedLyrics = idTags + combinedLyrics
                 
                 // Return the result through the completion closure.
-                completion(combinedLyricsWithUser)
+                completion(combinedLyrics)
             } else {
-                print("Failed to parse lyrics from JSON")
+                debugPrint("Failed to parse lyrics from JSON")
                 completion(nil)
             }
         } catch {
-            print("Error parsing JSON: \(error)")
+            debugPrint("Error parsing JSON: \(error)")
             completion(nil)
         }
     }
@@ -178,7 +165,7 @@ func timestampToTimeInterval(_ timestamp: String) -> TimeInterval? {
 /// - Returns: The timestamp string representation of the time interval.
 func timeIntervalToTimestamp(_ timeInterval: TimeInterval) -> String {
     let formatter = DateFormatter()
-    formatter.dateFormat = "mm:ss.SSS"
+    formatter.dateFormat = "mm:ss.SS"
     formatter.timeZone = TimeZone(secondsFromGMT: 0)
     
     // Convert the time interval to a timestamp string.

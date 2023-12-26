@@ -28,7 +28,7 @@ class LRCParser {
         
         // Split the content into lines
         let lines = unifiedContent.components(separatedBy: "\n")
-//        let lines = content.components(separatedBy: "\n")
+        //        let lines = content.components(separatedBy: "\n")
         // Use regular expression to match timestamps
         let regex = try! NSRegularExpression(pattern: "\\[([0-9]+:[0-9]+.[0-9]+)\\]", options: [])
         

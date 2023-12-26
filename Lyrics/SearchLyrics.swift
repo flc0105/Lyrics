@@ -98,8 +98,6 @@ struct SubWindowView: View {
     @State var searchText: String = ""
     @State var searchResults: [SearchResultItem]  = [] // Results to be displayed.
     @State var selectedItemId: String? // Selected item ID.
-    @State private var selection : SearchResult.Type?
-    
     
     var body: some View {
         VStack {
@@ -123,11 +121,10 @@ struct SubWindowView: View {
             .contextMenu(forSelectionType: SearchResultItem.ID.self
             ) { items in
             } primaryAction: { items in
-                
                 // Action when a row is double-clicked.
                 if let selectedItem = searchResults.first(where: { $0.id == selectedItemId }) {
                     let id = selectedItem.id
-                    print("Preparing to get lyrics for song ID " + id)
+                    debugPrint("Preparing to get lyrics for song ID " + id)
                     
                     // Extract the relevant information from the selected item.
                     let title = selectedItem.title
@@ -137,36 +134,19 @@ struct SubWindowView: View {
                     // Download lyrics and display an alert.
                     download(id: id, artist: artist, title: title, album: album) { combinedLyrics in
                         if let combinedLyrics = combinedLyrics {
-                            // Ensure UI-related code is executed on the main thread
+                            // Ensure that UI-related code is executed on the main thread
                             DispatchQueue.main.async {
-                                showTextAreaAlert(title: "Save lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
-                                    saveLyricsToFile(lyrics: text, filePath: getStoredLyricsFolderPath() + (currentTrack ?? searchText) + ".lrc")
+                                showTextAreaAlert(title: "Save Lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
+                                    saveLyricsToFile(lyrics: text, filePath: getStoredLyricsFolderPath() + (currentTrack ?? "\(artist) - \(title)") + ".lrc")
                                 }
                             }
                         } else {
-                            print("Failed to fetch combined lyrics.")
+                            DispatchQueue.main.async {
+                                showAlert(title: "Save Lyrics", message: "Failed to fetch lyrics.")
+                            }
                         }
                     }
                 }
-                
-                //                let id = items.first!
-                //                print("Preparing to get lyrics for song ID " + id)
-                //                
-                //                // Download lyrics and display an alert.
-                //                download(id: id) { combinedLyrics in
-                //                    if let combinedLyrics = combinedLyrics {
-                //                        // Ensure UI-related code is executed on the main thread
-                //                        DispatchQueue.main.async {
-                //                            showTextAreaAlert(title: "Save lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
-                //                                saveLyricsToFile(lyrics: text, filePath: getStoredLyricsFolderPath() + (currentTrack ?? searchText) + ".lrc")
-                //                            }
-                //                        }
-                //                    } else {
-                //                        print("Failed to fetch combined lyrics.")
-                //                    }
-                //                }
-                //                
-                
             }
             // Add a border to the table.
             .border(Color.gray, width: 1)
@@ -185,7 +165,7 @@ struct SubWindowView: View {
         // Perform actions when the view disappears.
         .onDisappear {
             onClose()
-            print("Sub window closed")
+            debugPrint("Sub window closed")
         }
     }
     
