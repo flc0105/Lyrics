@@ -63,7 +63,9 @@ func download(id: String, completion: @escaping (String?) -> Void) {
                 let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
                 
                 // Generate a string representation of the combined and sorted lyric items.
-                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
+//                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
+                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
+
                 
                 // Return the result through the completion closure.
                 completion(combinedLyrics)
