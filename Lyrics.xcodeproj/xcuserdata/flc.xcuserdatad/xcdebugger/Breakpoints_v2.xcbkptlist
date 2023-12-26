@@ -14,8 +14,8 @@
             filePath = "Lyrics/LyricsApp.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "252"
-            endingLineNumber = "252"
+            startingLineNumber = "251"
+            endingLineNumber = "251"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "Lyrics/LyricsApp.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "436"
-            endingLineNumber = "436"
+            startingLineNumber = "433"
+            endingLineNumber = "433"
             landmarkName = "startLyrics()"
             landmarkType = "9">
             <Locations>
