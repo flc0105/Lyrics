@@ -113,6 +113,7 @@ var isStopped: Bool = true
 class AppDelegate: NSObject, NSApplicationDelegate {
     /// The main window of the application.
     var window: NSWindow!
+    var subwindow: NSWindow!
     
     /// Called when the application finishes launching.
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -165,40 +166,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         
         window.styleMask.remove(.resizable) // Comment this line to allow full-screen
-        
     }
     
-    
-    /*
-     /// Called when the application finishes launching.
-     func applicationDidFinishLaunching(_ aNotification: Notification) {
-     // Set the start time
-     startTime = Date.timeIntervalSinceReferenceDate
-     
-     // Initialize the lyrics with a default "Not playing" line
-     viewModel.lyrics =  [
-     LyricInfo(id: 0, text: "Not playing", isCurrent: false, playbackTime: 0, isTranslation: false),
-     ]
-     
-     // Initialize the application
-     registerNotifications()
-     
-     // Create and configure the main window
-     window = NSWindow(
-     contentRect: NSRect(x: 0, y: 0, width: 300, height: 400),
-     styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-     backing: .buffered, defer: false)
-     
-     let hostingView = NSHostingView(rootView: LyricsView())
-     hostingView.translatesAutoresizingMaskIntoConstraints = false
-     
-     window.contentView = hostingView
-     window.titlebarAppearsTransparent = true
-     window.styleMask.insert(.fullSizeContentView)
-     window.center()
-     window.setFrameAutosaveName("LyricsWindow")
-     window.makeKeyAndOrderFront(nil)
-     }*/
     
     /// Called when the main window is closed.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -220,6 +189,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     
+    @objc func showSubwindow(_ sender: Any?) {
+        guard subwindow == nil else {
+            return
+        }
+        
+        // Create and configure the subwindow
+        subwindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered, defer: false
+        )
+        
+        // Set up the content view with the SubWindowView
+        let subwindowView = SubWindowView() {
+            self.closeSubwindow()
+        }
+        
+        subwindow.contentView = NSHostingView(rootView: subwindowView)
+        // Show the subwindow
+        subwindow.center()
+        subwindow.makeKeyAndOrderFront(nil)
+    }
+    
+    func closeSubwindow() {
+        subwindow = nil
+    }
 }
 
 
@@ -252,7 +247,7 @@ struct LyricsView: View {
     @ObservedObject private var imageObject = ImageObject.shared
     
     @State private var isHovered = false
-    
+    @State private var isShowingSheet = false
     
     var body: some View {
         
@@ -340,74 +335,9 @@ struct LyricsView: View {
                 message: Text("Lyrics text has been copied to the clipboard."),
                 dismissButton: .default(Text("OK"))
             )
-        }//.background(VisualEffectView().ignoresSafeArea())
+        }
+        
     }
-    
-    
-    /*
-     var body: some View {
-     
-     ZStack {
-     if let image = imageObject.backgroundImage {
-     Image(nsImage: image)
-     .resizable()
-     .aspectRatio(contentMode: .fill)
-     .ignoresSafeArea()
-     .blur(radius: 10)
-     .opacity(0.6)
-     .overlay(Color.black.opacity(0.5))
-     }
-     ScrollView {
-     ScrollViewReader { proxy in
-     VStack(spacing: 10) {
-     ForEach(viewModel.lyrics) { lyric in
-     Text(lyric.text)
-     .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
-     .foregroundColor(lyric.isCurrent ? .blue : .white)
-     .multilineTextAlignment(.center)
-     .padding(.vertical, lyric.isTranslation ? -40 : 20)
-     .padding(.horizontal, 10)
-     .frame(maxWidth: .infinity, alignment: .center)
-     .id(lyric.id)
-     .onTapGesture {
-     copyToClipboard(lyric.text)
-     isCopiedAlertPresented = true
-     }
-     }
-     }
-     .onChange(of: lyricViewModel.currentIndex) { [oldValue = lyricViewModel.currentIndex] newValue in
-     
-     debugPrint("oldValue=\(oldValue), newValue=\(newValue)")
-     
-     // Scroll to the current lyric's position
-     withAnimation() {
-     
-     viewModel.lyrics.indices.forEach { index in
-     viewModel.lyrics[index].isCurrent = false
-     }
-     
-     if (oldValue > 0 && oldValue < viewModel.lyrics.count) {
-     viewModel.lyrics[oldValue].isCurrent = true
-     proxy.scrollTo(oldValue, anchor: .center)
-     }
-     
-     }
-     }
-     }
-     }
-     }
-     .onAppear {
-     startTimer()
-     }.alert(isPresented: $isCopiedAlertPresented) {
-     Alert(
-     title: Text("Lyrics Copied"),
-     message: Text("Lyrics text has been copied to the clipboard."),
-     dismissButton: .default(Text("OK"))
-     )
-     }.background(VisualEffectView().ignoresSafeArea())
-     }
-     */
-    
     
     /// Start a timer to update lyrics every second.
     private func startTimer() {
@@ -436,7 +366,7 @@ struct LyricsView: View {
         // Calculate the current playback progress
         let currentPlaybackTime = Date().timeIntervalSinceReferenceDate - startTime
         
-//        playbackProgress = formatTimeInterval(currentPlaybackTime)
+        //        playbackProgress = formatTimeInterval(currentPlaybackTime)
         imageObject.playbackProgress = currentPlaybackTime
         
         // Get the current lyric
@@ -766,6 +696,9 @@ struct LyricsApp: App {
             CommandMenu("Configuration") {
                 Button("Player") { handleConfigurePlayer() }
                 Button("Lyrics Folder") { handleConfigureLyricsFolder() }
+                Button("Show Subwindow") {
+                    NSApp.sendAction(#selector(AppDelegate.showSubwindow(_:)), to: nil, from: nil)
+                }
             }
             CommandMenu("View") {
                 Toggle("Toggle Sticky", isOn: Binding<Bool>(
