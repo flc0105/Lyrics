@@ -54,7 +54,8 @@ func download(id: String, completion: @escaping (String?) -> Void) {
             // Extract lyric data from the JSON response.
             if let lrc = json?["lrc"] as? [String: Any], let lrcText = lrc["lyric"] as? String,
                let tlyric = json?["tlyric"] as? [String: Any], let tlyricText = tlyric["lyric"] as? String {
-                
+
+  
                 // Parse lyric text into LyricItem objects.
                 let lrcItems = parseLyric(lrcText)
                 let tlyricItems = parseLyric(tlyricText)
@@ -66,18 +67,6 @@ func download(id: String, completion: @escaping (String?) -> Void) {
 ////                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
 //                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
 
-                
-//                // Combine and sort lyric items based on timestamp.
-//                let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
-//
-//                // Remove duplicate entries with the same timestamp and empty content.
-//                let uniqueItems = combinedItems.filter { item in
-//                    let matchingEmptyItems = combinedItems.filter { $0.timestamp == item.timestamp && $0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-//                    return matchingEmptyItems.count <= 1
-//                }
-//
-//                // Generate a string representation of the combined and sorted lyric items.
-//                let combinedLyrics = uniqueItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
                 
                 // Combine and sort lyric items based on timestamp.
                 let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
@@ -103,9 +92,25 @@ func download(id: String, completion: @escaping (String?) -> Void) {
                 // Generate a string representation of the processed lyric items.
                 let combinedLyrics = processedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
 
+
+                
+                
+                var combinedLyricsWithUser = combinedLyrics
+                // Check if the lyricUser and transUser information is available.
+                if let lyricUser = json?["lyricUser"] as? [String: Any], let lyricUserNickname = lyricUser["nickname"] as? String,
+                   let transUser = json?["transUser"] as? [String: Any], let transUserNickname = transUser["nickname"] as? String {
+                    
+                    // Generate user information text.
+                    let userText = "[00:00.000] 贡献滚动歌词：" + lyricUserNickname + "\n[00:00.000] 贡献翻译：" + transUserNickname
+                    
+                    // Insert user information text at the beginning of combinedLyrics.
+                    combinedLyricsWithUser = userText + "\n" + combinedLyrics
+                }
+                
+
                 
                 // Return the result through the completion closure.
-                completion(combinedLyrics)
+                completion(combinedLyricsWithUser)
             } else {
                 print("Failed to parse lyrics from JSON")
                 completion(nil)

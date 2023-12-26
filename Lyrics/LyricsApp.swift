@@ -693,7 +693,7 @@ struct LyricsApp: App {
             CommandMenu("Configuration") {
                 Button("Player") { handleConfigurePlayer() }
                 Button("Lyrics Folder") { handleConfigureLyricsFolder() }
-                Button("Show Subwindow") {
+                Button("Search Lyrics") {
                     NSApp.sendAction(#selector(AppDelegate.showSubwindow(_:)), to: nil, from: nil)
                 }
             }

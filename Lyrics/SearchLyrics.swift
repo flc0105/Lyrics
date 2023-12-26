@@ -106,22 +106,25 @@ struct SubWindowView: View {
                 TextField("Enter search keyword", text: $searchText)
                 // Button to initiate the search.
                 Button("Search") {
-                    // Call the searchSong function with the entered keyword.
-                    searchSong (keyword: searchText) { result, error in
-                        // Handle any error returned by the search.
-                        if let error = error {
-                            print("Error: \(error)")
-                            return
-                        }
-                        // If there are songs in the result, update the searchResults state.
-                        if let songs = result?.songs {
-                            DispatchQueue.main.async {
-                                self.searchResults = songs.map {
-                                    SearchResultItem(id: "\($0.id)", title: $0.name, artist: $0.artists.first?.name ?? "Unknown Artist", album: $0.album.name)
-                                }
-                            }
-                        }
-                    }
+                    
+                    // Call the searchButtonTapped method to handle search logic.
+                                searchButtonTapped()
+//                    // Call the searchSong function with the entered keyword.
+//                    searchSong (keyword: searchText) { result, error in
+//                        // Handle any error returned by the search.
+//                        if let error = error {
+//                            print("Error: \(error)")
+//                            return
+//                        }
+//                        // If there are songs in the result, update the searchResults state.
+//                        if let songs = result?.songs {
+//                            DispatchQueue.main.async {
+//                                self.searchResults = songs.map {
+//                                    SearchResultItem(id: "\($0.id)", title: $0.name, artist: $0.artists.first?.name ?? "Unknown Artist", album: $0.album.name)
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
             // Table displaying search results.
@@ -143,8 +146,8 @@ struct SubWindowView: View {
                     if let combinedLyrics = combinedLyrics {
                         // Ensure UI-related code is executed on the main thread
                         DispatchQueue.main.async {
-                            showTextAreaAlert(title: "Download lyrics", message: "Are you sure you want to download the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
-                                saveLyricsToFile(lyrics: text, filePath: "/Users/flc/Desktop/test.lrc")
+                            showTextAreaAlert(title: "Save lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
+                                saveLyricsToFile(lyrics: text, filePath: getStoredLyricsFolderPath() + (currentTrack ?? searchText) + ".lrc")
                             }
                         }
                     } else {
@@ -157,10 +160,40 @@ struct SubWindowView: View {
         }
         // Add padding to the entire view.
         .padding()
+        // Set the initial value of searchText to currentTrack when the view appears.
+            .onAppear() {
+                // Check if currentTrack is not empty before setting the searchText and triggering the search logic.
+                if let currentTrack = currentTrack, !currentTrack.isEmpty {
+                    searchText = currentTrack
+                    // Simulate a button tap to trigger the search logic.
+                    searchButtonTapped()
+                }
+            }
         // Perform actions when the view disappears.
         .onDisappear {
             onClose()
             print("Sub window closed")
+        }
+    }
+    
+    
+    // Method to handle the search button tap.
+    private func searchButtonTapped() {
+        // Call the searchSong function with the entered keyword.
+        searchSong(keyword: searchText) { result, error in
+            // Handle any error returned by the search.
+            if let error = error {
+                print("Error: \(error)")
+                return
+            }
+            // If there are songs in the result, update the searchResults state.
+            if let songs = result?.songs {
+                DispatchQueue.main.async {
+                    self.searchResults = songs.map {
+                        SearchResultItem(id: "\($0.id)", title: $0.name, artist: $0.artists.first?.name ?? "Unknown Artist", album: $0.album.name)
+                    }
+                }
+            }
         }
     }
 }
