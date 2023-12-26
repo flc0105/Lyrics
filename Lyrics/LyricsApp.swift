@@ -23,8 +23,12 @@ class LRCParser {
     /// Parses the content of an LRC file.
     /// - Parameter content: Content of the LRC file as a string.
     func parseLRCContent(_ content: String) {
+        // Replace CRLF with LF TODO: 处理文件
+        let unifiedContent = content.replacingOccurrences(of: "\r\n", with: "\n")
+        
         // Split the content into lines
-        let lines = content.components(separatedBy: "\n")
+        let lines = unifiedContent.components(separatedBy: "\n")
+//        let lines = content.components(separatedBy: "\n")
         // Use regular expression to match timestamps
         let regex = try! NSRegularExpression(pattern: "\\[([0-9]+:[0-9]+.[0-9]+)\\]", options: [])
         
@@ -273,7 +277,7 @@ struct LyricsView: View {
                                 .font(lyric.isCurrent ? .system(size: 14) : .system(size: 14))
                                 .foregroundColor(lyric.isCurrent ? .blue : .white)
                                 .multilineTextAlignment(.center)
-                                .padding(.vertical, lyric.isTranslation ? -40 : 20)
+                                .padding(.vertical, lyric.isTranslation ? -30 : 30)
                                 .padding(.horizontal, 10)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .id(lyric.id)
