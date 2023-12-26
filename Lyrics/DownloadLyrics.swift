@@ -18,7 +18,7 @@ struct LyricItem {
 /// - Parameters:
 ///   - id: The ID of the song for which lyrics are to be downloaded.
 ///   - completion: A closure to be called with the downloaded lyrics or `nil` if an error occurs.
-func download(id: String, completion: @escaping (String?) -> Void) {
+func download(id: String, artist: String, title: String, album: String, completion: @escaping (String?) -> Void) {
     let urlString = "https://music.163.com/api/song/lyric"
     let parameters = ["tv": "-1", "lv": "-1", "kv": "-1", "id": id]
     
@@ -54,32 +54,32 @@ func download(id: String, completion: @escaping (String?) -> Void) {
             // Extract lyric data from the JSON response.
             if let lrc = json?["lrc"] as? [String: Any], let lrcText = lrc["lyric"] as? String,
                let tlyric = json?["tlyric"] as? [String: Any], let tlyricText = tlyric["lyric"] as? String {
-
-  
+                
+                
                 // Parse lyric text into LyricItem objects.
                 let lrcItems = parseLyric(lrcText)
                 let tlyricItems = parseLyric(tlyricText)
                 
-//                // Combine and sort lyric items based on timestamp.
-//                let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
-//                
-//                // Generate a string representation of the combined and sorted lyric items.
-////                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
-//                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
-
+                //                // Combine and sort lyric items based on timestamp.
+                //                let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
+                //                
+                //                // Generate a string representation of the combined and sorted lyric items.
+                ////                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content)" }.joined(separator: "\n")
+                //                let combinedLyrics = combinedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
+                
                 
                 // Combine and sort lyric items based on timestamp.
                 let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
-
+                
                 // Create a set to keep track of seen timestamps with empty content.
                 var seenEmptyTimestamps = Set<TimeInterval>()
-
+                
                 // Filter and process lyric items.
                 let processedItems = combinedItems.filter { item in
                     // Check if the content is empty or has been seen before.
                     let isContentEmpty = item.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     let isTimestampSeen = seenEmptyTimestamps.contains(item.timestamp)
-
+                    
                     // Update the set and keep the item if the content is not empty or it's the first empty content for this timestamp.
                     if !isContentEmpty || !isTimestampSeen {
                         seenEmptyTimestamps.insert(item.timestamp)
@@ -88,26 +88,27 @@ func download(id: String, completion: @escaping (String?) -> Void) {
                         return false
                     }
                 }
-
+                
                 // Generate a string representation of the processed lyric items.
                 let combinedLyrics = processedItems.map { "[\(timeIntervalToTimestamp($0.timestamp))] \($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
-
-
                 
+                var tag = "[ar:\(artist)]\n[ti:\(title)]\n[al:\(album)]\n"
                 
                 var combinedLyricsWithUser = combinedLyrics
+                
+                //                var tag: String = ""
+                
                 // Check if the lyricUser and transUser information is available.
-                if let lyricUser = json?["lyricUser"] as? [String: Any], let lyricUserNickname = lyricUser["nickname"] as? String,
-                   let transUser = json?["transUser"] as? [String: Any], let transUserNickname = transUser["nickname"] as? String {
-                    
-                    // Generate user information text.
-                    let userText = "[00:00.000] 贡献滚动歌词：" + lyricUserNickname + "\n[00:00.000] 贡献翻译：" + transUserNickname
-                    
-                    // Insert user information text at the beginning of combinedLyrics.
-                    combinedLyricsWithUser = userText + "\n" + combinedLyrics
+                if let lyricUser = json?["lyricUser"] as? [String: Any], let lyricUserNickname = lyricUser["nickname"] as? String {
+                    tag += "[by:\(lyricUserNickname)]\n"
                 }
                 
-
+                if  let transUser = json?["transUser"] as? [String: Any], let transUserNickname = transUser["nickname"] as? String {
+                    tag += "[trans:\(transUserNickname)]\n"
+                }
+                
+                // Insert user information text at the beginning of combinedLyrics.
+                combinedLyricsWithUser = tag + combinedLyrics
                 
                 // Return the result through the completion closure.
                 completion(combinedLyricsWithUser)
