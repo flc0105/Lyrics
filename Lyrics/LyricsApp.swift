@@ -687,21 +687,7 @@ struct LyricsApp: App {
             EmptyView()
         }
         .commands {
-            CommandMenu("Calibration") {
-                Button("1 Second Faster") { handle1SecondFaster() }
-                    .keyboardShortcut("+");
-                Button("1 Second Slower") { handle1SecondSlower() }
-                    .keyboardShortcut("-")
-                Button("Manual Calibration") { handleManualCalibration() }
-            };
-            CommandMenu("Configuration") {
-                Button("Player") { handleConfigurePlayer() }
-                Button("Lyrics Folder") { handleConfigureLyricsFolder() }
-                Button("Search Lyrics") {
-                    NSApp.sendAction(#selector(AppDelegate.showSubwindow(_:)), to: nil, from: nil)
-                }
-            }
-            CommandMenu("View") {
+            CommandMenu("Display") {
                 Toggle("Toggle Sticky", isOn: Binding<Bool>(
                     get: {
                         return imageObject.isWindowSticky
@@ -712,7 +698,6 @@ struct LyricsApp: App {
                         debugPrint("isWindowSticky=\(imageObject.isWindowSticky)")
                     }
                 ))
-                //                Button("Toggle Full Screen") { NSApp.sendAction(#selector(AppDelegate.toggleFullScreen(_:)), to: nil, from: nil) }
                 Toggle("Show Album Cover", isOn: Binding<Bool>(
                     get: {
                         return imageObject.isCoverImageVisible
@@ -743,6 +728,22 @@ struct LyricsApp: App {
                         }
                     }
                 ))
+            }
+            CommandMenu("Playback") {
+                Button("1 Second Faster") { handle1SecondFaster() }
+                    .keyboardShortcut("+");
+                Button("1 Second Slower") { handle1SecondSlower() }
+                    .keyboardShortcut("-")
+                Button("Manual Calibration") { handleManualCalibration() }
+            }
+            CommandMenu("Settings") {
+                Button("Configure Player") { handleConfigurePlayer() }
+                Button("Configure Lyrics Folder") { handleConfigureLyricsFolder() }
+            }
+            CommandMenu("Utilities") {
+                Button("Search Lyrics") {
+                    NSApp.sendAction(#selector(AppDelegate.showSubwindow(_:)), to: nil, from: nil)
+                }.keyboardShortcut("s")
             }
         }
     }
