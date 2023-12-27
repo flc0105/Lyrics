@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import HotKey
 
 
 import Foundation
@@ -675,12 +676,14 @@ func handleConfigureLyricsFolder() {
 @main
 struct LyricsApp: App {
     
+    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: {NSApp.activate(ignoringOtherApps: true)})
+    
     // The app delegate for managing the application's lifecycle.
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     @ObservedObject private var imageObject = ImageObject.shared
     
-    // The body of the app scene.
+    // The body of the app scene.
     var body: some Scene {
         // Settings scene
         Settings {
