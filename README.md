@@ -1,28 +1,39 @@
 # Lyrics App for macOS
 
-This macOS application offers a real-time lyrics display panel synced with the currently playing track on your system. By integrating with macOS Now Playing information, it retrieves details about the artist, title, and playback time. The app then reads local LRC (Lyric) files associated with the playing track, providing synchronized lyrics in a dedicated window.
+A macOS app that presents a synchronized scrolling lyrics panel based on the currently playing track in the system.
 
 ## Features
 
-- **Real-time Lyrics Display:** Continuously updates and displays lyrics based on the current playback time of the system's Now Playing track.
+- Display synchronized scrolling lyrics corresponding to system now playing tracks.
 
-- **LRC File Integration:** Synchronizes lyrics with the playing track using LRC files, enhancing the music listening experience.
+- Automatically loads the LRC file corresponding to the currently playing track and present the lyrics at the correct timeline based on playback progress.
 
-- **Calibration Menu:** Allows users to adjust lyrics progress for accurate synchronization with music playback.
+- Monitor events such as pausing, resuming, and track switching, as well as startup and exit events for the specified player.
 
-- **Player Integration:** Automatically registers and unregisters for Now Playing notifications when specified music players start or exit.
+- Lyrics panel interface supports displaying album art and playback progress of the currently playing track.
+
+- Allows online search, preview and download of lyrics, currently supports NetEase Cloud Music.
+
+- Robust support for both single-line lyrics and two-line translated lyrics.
+
+- Allows users to adjust lyrics progress for accurate synchronization with music playback.
 
 ## How to Use
 
-1. **Launch the Application:** Open the application on your macOS system.
+1. On the first launch, configure your player's bundle identifier and lyrics storage directory in the "Settings" menu. Restart the application after completing the configuration.
 
-2. **Automatic Player Integration:** The app automatically registers for Now Playing notifications upon opening the specified music player. It listens for events such as play, pause, resume, and track changes.
+2. After relaunching the app, start playing music in your player, and the lyrics will automatically load and appear in the window.
 
-3. **Start Playback:** Open your music player and start playback. The app syncs with the Now Playing track.
+3. Lyrics are matched with the playing track by naming LRC files as "artist - title.lrc" within the lyrics folder. Use the "Search Lyrics" menu for online searches. It will automatically search for the lyrics of the current track from NetEase Cloud Music. Double-click on the lyrics you wish to use to preview them, then click the download button to save the lyrics to the configured folder.
 
-4. **Lyrics Display:** The lyrics window shows real-time lyrics, scrolling according to the playback time of the playing track. Lyrics are matched with the playing track by naming LRC files as "artist - title.lrc" within the lyrics folder.
+4. Due to the use of macOS's private APIs instead of direct player association, lyrics progress may be inaccurate in the first few seconds after starting playback. We will recalibrate the progress after 3 seconds of playback by default. If it remains inaccurate, please manually calibrate it using the "Playback" menu.
 
-5. **Calibrate Lyrics Progress:** Due to the use of macOS's private APIs instead of direct player association, occasional delays may occur, especially during playback resumption. Adjust lyrics progress for the current track using the calibration menu if needed.
+5. Shortcut keys:
+- `Control + L`: Activate window
+- `Command + S`: Open the lyrics search window
+- `Command + +`: Fast forward the lyrics by one second.
+- `Command + -`: Rewind lyrics by one second.
+
 
 ## Build and Run
 
@@ -34,14 +45,20 @@ To build and run the application:
 
 3. Build and run the project using Xcode.
 
-4. Enjoy synchronized lyrics display.
+4. Enjoy the app.
 
-Feel free to contribute, report issues, or suggest enhancements to improve this lyrics display app!
+Feel free to contribute, report issues, or suggest enhancements to improve this app!
 
 ## Screenshot
 
 One-Line Lyrics:
-![SCR-20231220-nvhg](https://github.com/flc0105/Lyrics/assets/101919965/7d40622f-2108-440d-a102-2a97d8010bb3)
 
-Two-Line Lyrics (original and translation):
-![SCR-20231220-nxtm](https://github.com/flc0105/Lyrics/assets/101919965/838dd015-0483-4626-9566-1aaf0ddf5eb7)
+![SCR-20231227-lhjm](https://github.com/flc0105/Lyrics/assets/101919965/83743cbd-7d00-4385-aaf5-52c541989427)
+
+Two-Line Lyrics:
+
+![SCR-20231227-lfsm](https://github.com/flc0105/Lyrics/assets/101919965/2810d0da-3093-4126-9d0f-97b7b8e8ddc8)
+
+Search Lyrics Window:
+
+![SCR-20231227-lgdb](https://github.com/flc0105/Lyrics/assets/101919965/e3a91873-f8ef-40f2-ab53-8d88556ed76b)
