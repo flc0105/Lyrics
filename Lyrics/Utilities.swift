@@ -271,6 +271,16 @@ func isPlaybackProgressVisibleConfig() -> Bool {
 }
 
 
+/// Secure a file name by replacing illegal characters with underscores.
+/// - Parameter fileName: The original file name to be secured.
+/// - Returns: The secured file name with illegal characters replaced by underscores.
+func secureFileName(fileName: String) -> String {
+    // Replace illegal characters in the file name with underscores
+    let illegalCharacters = CharacterSet(charactersIn: "\\/:*?\"<>|")
+    return fileName.components(separatedBy: illegalCharacters).joined(separator: "_")
+}
+
+
 /// Constructs and returns the path for the LRC (Lyrics) file based on the artist and title of the song.
 ///
 /// - Parameters:
@@ -279,14 +289,9 @@ func isPlaybackProgressVisibleConfig() -> Bool {
 /// - Returns: The file path for the LRC file.
 func getLyricsPath(artist: String, title: String) -> String {
     // Create the file name by combining artist and title
-    let fileName = "\(artist) - \(title).lrc"
-    
-    // Replace illegal characters in the file name with underscores
-    let illegalCharacters = CharacterSet(charactersIn: "\\/:*?\"<>|")
-    let replacedFileName = fileName.components(separatedBy: illegalCharacters).joined(separator: "_")
-    
+    let fileName = secureFileName(fileName: "\(artist) - \(title).lrc")
     // Construct and return the full file path
-    return "\(getLyricsFolderPathConfig())\(replacedFileName)"
+    return "\(getLyricsFolderPathConfig())\(fileName)"
 }
 
 
@@ -297,7 +302,7 @@ func getLyricsPath(artist: String, title: String) -> String {
 ///   - artist: The artist name for file naming.
 ///   - title: The title name for file naming.
 func saveLyricsToFile(lyrics: String, artist: String, title: String) {
-    let filePath = getLyricsFolderPathConfig() + (currentTrack ?? "\(artist) - \(title)") + ".lrc"
+    let filePath = getLyricsFolderPathConfig() + secureFileName(fileName: (currentTrack ?? "\(artist) - \(title)")  + ".lrc")
     do {
         try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
         print("Lyrics saved to: \(filePath)")
