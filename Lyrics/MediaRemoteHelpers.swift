@@ -8,6 +8,23 @@
 import Foundation
 import Cocoa
 
+
+var currentTrack: String?
+
+
+/// Enum representing different playback states for a media application.
+enum PlaybackState: Int {
+    /// The media application is terminated.
+    case terminated = 0
+    /// The media application is currently playing.
+    case playing = 1
+    /// The media application is paused.
+    case paused = 2
+    /// The media application is stopped.
+    case stopped = 3
+}
+
+
 // Create a bundle for the MediaRemote framework
 let bundle = CFBundleCreate(kCFAllocatorDefault, NSURL(fileURLWithPath: "/System/Library/PrivateFrameworks/MediaRemote.framework"))
 
@@ -46,7 +63,6 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         
         // Check if the information is empty
         if information.isEmpty {
-            print("Could not find the specified now playing client")
             // Call the completion handler with an empty dictionary
             completion(nowPlayingInfo)
             return
@@ -57,19 +73,16 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
         nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
         
-        if (ImageObject.shared.isCoverImageVisible) {
-            
+        if (UIPreferences.shared.isCoverImageVisible) {
             let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
             let artwork = artworkData.flatMap { NSImage(data: $0) }
-            
             if (artwork == nil) {
                 debugPrint("Artwork is nil.")
-                //                ImageObject.shared.backgroundImage = nil
-            } else if (artwork?.tiffRepresentation == ImageObject.shared.backgroundImage?.tiffRepresentation) {
+            } else if (artwork?.tiffRepresentation == UIPreferences.shared.coverImage?.tiffRepresentation) {
                 debugPrint("Artwork has not changed, skipped.")
             } else {
                 debugPrint("Artwork change detected, updated.")
-                ImageObject.shared.backgroundImage = artwork
+                UIPreferences.shared.coverImage = artwork
             }
         }
         
@@ -77,7 +90,6 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         completion(nowPlayingInfo)
     }
 }
-
 
 
 /// Updates the album cover based on the currently playing media information.
@@ -88,12 +100,12 @@ func updateAlbumCover() {
         
         // Check if the information is empty
         if information.isEmpty {
-            print("Could not find the specified now playing client")
+            debugPrint("Now playing information is empty.")
             return
         }
         
         // Check if the cover image visibility is enabled
-        if (ImageObject.shared.isCoverImageVisible) {
+        if (UIPreferences.shared.isCoverImageVisible) {
             
             // Extract the artwork data from the now playing information
             let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
@@ -102,13 +114,10 @@ func updateAlbumCover() {
             let artwork = artworkData.flatMap { NSImage(data: $0) }
             
             // Set the background image in the shared ImageObject
-            ImageObject.shared.backgroundImage = artwork
+            UIPreferences.shared.coverImage = artwork
         }
-        
     }
 }
-
-
 
 
 /// Retrieves the playback state of the currently playing media application.
@@ -125,8 +134,6 @@ func getPlaybackState(completion: @escaping (Bool) -> Void) {
 }
 
 
-var currentTrack: String?
-
 /// Handles the notification when the now playing information changes.
 ///
 /// - Parameter notification: The notification object.
@@ -135,7 +142,7 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         
         // Check if the now playing information is empty
         guard !nowPlayingInfo.isEmpty else {
-            print("Now playing information is empty.")
+            debugPrint("Now playing information is empty.")
             return
         }
         
@@ -145,7 +152,6 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         let track = "\(artist) - \(title)"
         
         // Check if the current track is nil or if it's the same as the new track
-        
         if currentTrack == nil {
             currentTrack = track
             return
@@ -154,13 +160,12 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         if track == currentTrack {
             return
         } else {
-            print("Track change detected: \(String(describing: currentTrack)) -> \(track)")
+            debugPrint("Track change detected: \(String(describing: currentTrack)) -> \(track)")
             currentTrack = track
             
             // Check playback state
             getPlaybackState { isPlaying in
                 if isPlaying {
-                    // Take action when the playback state is playing
                     startLyrics()
                 }
             }
@@ -168,35 +173,6 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
     }
 }
 
-/// Constructs and returns the path for the LRC (Lyrics) file based on the artist and title of the song.
-///
-/// - Parameters:
-///   - artist: The artist of the song.
-///   - title: The title of the song.
-/// - Returns: The file path for the LRC file.
-func getLRCPath(artist: String, title: String) -> String {
-    // Create the file name by combining artist and title
-    let fileName = "\(artist) - \(title).lrc"
-    
-    // Replace illegal characters in the file name with underscores
-    let illegalCharacters = CharacterSet(charactersIn: "\\/:*?\"<>|")
-    let replacedFileName = fileName.components(separatedBy: illegalCharacters).joined(separator: "_")
-    
-    // Construct and return the full file path
-    return "\(getStoredLyricsFolderPath())\(replacedFileName)"
-}
-
-/// Enum representing different playback states for a media application.
-enum PlaybackState: Int {
-    /// The media application is terminated.
-    case terminated = 0
-    /// The media application is currently playing.
-    case playing = 1
-    /// The media application is paused.
-    case paused = 2
-    /// The media application is stopped.
-    case stopped = 3
-}
 
 /// Handles the change in playback state of the currently playing media application.
 ///
@@ -208,7 +184,7 @@ func handleNowPlayingApplicationPlaybackStateDidChange(notification: Notificatio
     // Convert the raw playback state to a PlaybackState enum
     if let playbackState = PlaybackState(rawValue: rawPlaybackState) {
         // Print the detected playback state
-        print("Playback state change detected: \(playbackState)")
+        debugPrint("Playback state change detected: \(playbackState)")
         
         // Check the playback state and perform actions accordingly
         if playbackState == .playing {
@@ -220,46 +196,14 @@ func handleNowPlayingApplicationPlaybackStateDidChange(notification: Notificatio
 }
 
 
-/// Retrieves the stored player name from UserDefaults.
-///
-/// If the player name is not found in UserDefaults, it registers a default value ("com.roon.Roon").
-///
-/// - Returns: The stored player name, or the default value if not found.
-func getStoredPlayerName() -> String {
-    UserDefaults.standard.register(defaults: ["PlayerPackageName": "com.roon.Roon"])
-    return UserDefaults.standard.string(forKey: "PlayerPackageName") ?? ""
-}
-
-/// Retrieves the stored lyrics folder path from UserDefaults.
-///
-/// If the folder path is not found in UserDefaults, it registers a default value ("/Users/flc/Desktop/Lyrics/").
-///
-/// - Returns: The stored lyrics folder path, or the default value if not found.
-func getStoredLyricsFolderPath() -> String {
-    UserDefaults.standard.register(defaults: ["LyricsFolder": "/Users/flc/Desktop/Lyrics/"])
-    return UserDefaults.standard.string(forKey: "LyricsFolder") ?? ""
-}
-
-func getStoredIsCoverImageVisible() -> Bool {
-    UserDefaults.standard.register(defaults: ["IsCoverImageVisible": false])
-    return UserDefaults.standard.bool(forKey: "IsCoverImageVisible")
-}
-
-func getStoredIsPlaybackProgressVisible() -> Bool {
-    UserDefaults.standard.register(defaults: ["IsPlaybackProgressVisible": true])
-    return UserDefaults.standard.bool(forKey: "IsPlaybackProgressVisible")
-}
-
-
-/// Register notifications for Now Playing info and application playback state changes.
+/// Register for notifications related to system playback state and application lifecycle.
 func registerNotifications() {
-    //    let targetAppBundleIdentifier = "com.roon.Roon"
     
     // Bundle Identifier of the application to be monitored
-    let targetAppBundleIdentifier = getStoredPlayerName()
+    let targetAppBundleIdentifier = getPlayerNameConfig()
     
     if targetAppBundleIdentifier.isEmpty {
-        print("Player package name not set.")
+        debugPrint("No app bundle identifier set.")
         return
     }
     
@@ -287,7 +231,7 @@ func registerNotifications() {
             if app.bundleIdentifier == targetAppBundleIdentifier {
                 // Register Now Playing notifications
                 MRMediaRemoteRegisterForNowPlayingNotifications(DispatchQueue.main)
-                print("MediaRemote now playing notifications registered.")
+                debugPrint("MediaRemote now playing notifications registered.")
             }
         }
     }
@@ -300,18 +244,18 @@ func registerNotifications() {
             if app.bundleIdentifier == targetAppBundleIdentifier {
                 // Unregister Now Playing notifications
                 MRMediaRemoteUnregisterForNowPlayingNotifications(DispatchQueue.main)
-                print("MediaRemote now playing notifications unregistered.")
+                debugPrint("MediaRemote now playing notifications unregistered.")
             }
         }
     }
     
     // Check if the application is already running at startup
     if let targetApp = NSRunningApplication.runningApplications(withBundleIdentifier: targetAppBundleIdentifier).first {
-        print("Application is running: \(targetApp.localizedName ?? "").")
+        debugPrint("Application is running: \(targetApp.localizedName ?? "").")
         
         // Register Now Playing notifications
         MRMediaRemoteRegisterForNowPlayingNotifications(DispatchQueue.main)
-        print("MediaRemote now playing notifications registered.")
+        debugPrint("MediaRemote now playing notifications registered.")
         
         // Check the current playback state at startup
         getPlaybackState { isPlaying in
@@ -320,6 +264,6 @@ func registerNotifications() {
             }
         }
     } else {
-        print("Application is not running.")
+        debugPrint("Application is not running.")
     }
 }

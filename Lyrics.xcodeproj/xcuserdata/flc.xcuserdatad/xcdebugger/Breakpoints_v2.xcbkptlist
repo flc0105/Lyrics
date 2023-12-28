@@ -7,22 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "4B917CCA-4E6B-48CD-B0EE-1B37195F210F"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Lyrics/LyricsApp.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "256"
-            endingLineNumber = "256"
-            landmarkName = "body"
-            landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "779B2C99-6F81-4916-BB5E-A516A78DE355"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -34,54 +18,6 @@
             endingLineNumber = "211"
             landmarkName = "handleNowPlayingApplicationPlaybackStateDidChange(notification:)"
             landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "EE3E419D-5BDF-40B8-ACCC-1D713340D05D"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Lyrics/LyricsApp.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "438"
-            endingLineNumber = "438"
-            landmarkName = "startLyrics()"
-            landmarkType = "9">
-            <Locations>
-               <Location
-                  uuid = "EE3E419D-5BDF-40B8-ACCC-1D713340D05D - 8dccd56cb3885cf9"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "function signature specialization &lt;Arg[1] = [Constant Propagated Function : closure #1 (Swift.Bool) -&gt; () in closure #1 (Swift.Dictionary&lt;Swift.String, Any&gt;) -&gt; () in Lyrics.handleNowPlayingInfoDidChangeNotification(notification: Foundation.Notification) -&gt; ()]&gt; of closure #1 (Swift.Bool) -&gt; () in Lyrics.getPlaybackState(completion: (Swift.Bool) -&gt; ()) -&gt; ()"
-                  moduleName = "Lyrics"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/flc/Projects/Lyrics/Lyrics/LyricsApp.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "501"
-                  endingLineNumber = "501"
-                  offsetFromSymbolStart = "84">
-               </Location>
-               <Location
-                  uuid = "EE3E419D-5BDF-40B8-ACCC-1D713340D05D - 69aa6743b18665b5"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Lyrics.handleNowPlayingApplicationPlaybackStateDidChange(notification: Foundation.Notification) -&gt; ()"
-                  moduleName = "Lyrics"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/flc/Projects/Lyrics/Lyrics/LyricsApp.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "501"
-                  endingLineNumber = "501"
-                  offsetFromSymbolStart = "556">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
