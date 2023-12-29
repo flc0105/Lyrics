@@ -140,6 +140,18 @@ struct LyricsView: View {
             Button("Search Lyrics") {
                 handleSearchLyrics()
             }
+            
+            Toggle("Toggle Sticky", isOn: Binding<Bool>(
+                get: {
+                    return uiPreferences.isWindowSticky
+                },
+                set: { isEnabled in
+                    handleToggleSticky(isEnabled: isEnabled)
+                }
+            ))
+            
+            Divider()
+            
             Button("1 Second Faster") {
                 handle1SecondFaster()
             }
@@ -149,6 +161,10 @@ struct LyricsView: View {
             Button("Manual Calibration") {
                 handleManualCalibration()
             }
+            
+            Divider()
+            
+
         }
         .gesture(TapGesture(count: 2).onEnded {
             debugPrint("Double clicked")
