@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import HotKey
+import AlertToast
 
 
 /// A shared instance for managing user interface preferences.
@@ -29,6 +30,14 @@ class UIPreferences: ObservableObject {
     
     /// A boolean indicating whether the window is sticky.
     @Published var isWindowSticky: Bool = false
+    
+    
+    
+    @Published var showToast: Bool = false;
+    
+    @Published var toastText: String = "";
+    
+    @Published var toastType: AlertToast.AlertType = .regular;
     
 }
 
@@ -124,6 +133,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    
     /// Shows the subwindow for searching lyrics if it is not already visible.
     /// - Parameter sender: The object that triggered the action (e.g., a menu item).
     @objc func showSubwindow(_ sender: Any?) {
@@ -164,12 +174,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 /// Adjusts the start time to make the lyrics display 1 second faster.
 func handle1SecondFaster() {
     startTime -= 1
+    showRegularToast("Fast-forward one second.")
 }
 
 
 /// Adjusts the start time to make the lyrics display 1 second slower.
 func handle1SecondSlower() {
     startTime += 1
+    showRegularToast("Rewind one second.")
 }
 
 

@@ -305,9 +305,9 @@ func saveLyricsToFile(lyrics: String, artist: String, title: String) {
     let filePath = getLyricsFolderPathConfig() + secureFileName(fileName: (currentTrack ?? "\(artist) - \(title)")  + ".lrc")
     do {
         try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
-        print("Lyrics saved to: \(filePath)")
+        debugPrint("Lyrics saved to: \(filePath)")
     } catch {
-        print("Error saving lyrics to file: \(error)")
+        debugPrint("Error saving lyrics to file: \(error)")
     }
 }
 
@@ -318,5 +318,12 @@ func copyToClipboard(_ text: String) {
     let pasteboard = NSPasteboard.general
     pasteboard.clearContents()
     pasteboard.setString(text, forType: .string)
-    print("Lyrics copied to clipboard: \(text)")
+    debugPrint("Lyrics copied to clipboard: \(text)")
+}
+
+
+func showRegularToast(_ text: String) {
+    UIPreferences.shared.toastType = .regular
+    UIPreferences.shared.showToast = true
+    UIPreferences.shared.toastText = text
 }

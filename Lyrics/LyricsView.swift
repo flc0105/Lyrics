@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import AlertToast
 
 
 /// View model for managing lyrics data.
@@ -37,7 +38,7 @@ var isStopped: Bool = true
 struct LyricsView: View {
     
     @ObservedObject private var lyricViewModel: LyricsViewModel = LyricsViewModel.shared
-    @ObservedObject private var uiPreferences: UIPreferences = UIPreferences.shared
+    @ObservedObject  var uiPreferences: UIPreferences = UIPreferences.shared
     
     @State private var isCopiedAlertPresented: Bool = false
     @State private var isHovered = false
@@ -132,7 +133,9 @@ struct LyricsView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
-        
+        .toast(isPresenting: $uiPreferences.showToast){
+            AlertToast(type: uiPreferences.toastType, title: uiPreferences.toastText)
+        }
     }
     
     
