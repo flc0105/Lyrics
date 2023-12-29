@@ -74,9 +74,9 @@ func showInputAlert(title: String, message: String, defaultValue: String, onFirs
             showAlert(title: "Settings Not Saved", message: "Your input is empty.")
             return
         }
-        guard inputText != defaultValue else {
-            return  // No action if the input is the same as the default value
-        }
+//        guard inputText != defaultValue else {
+//            return  // No action if the input is the same as the default value
+//        }
         onFirstButtonTap(inputText)
     }
 }
@@ -324,6 +324,13 @@ func copyToClipboard(_ text: String) {
 
 func showRegularToast(_ text: String) {
     UIPreferences.shared.toastType = .regular
+    UIPreferences.shared.showToast = true
+    UIPreferences.shared.toastText = text
+}
+
+
+func showSuccessToast(_ text: String) {
+    UIPreferences.shared.toastType = .complete(Color.green)
     UIPreferences.shared.showToast = true
     UIPreferences.shared.toastText = text
 }

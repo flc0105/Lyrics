@@ -200,7 +200,8 @@ func handleManualCalibration() {
                 return
             }
             startTime -= adjustment
-            showAlert(title: "Manual Calibration", message: "Adjusted by \(adjustment) seconds.")
+            showSuccessToast("Adjusted by \(adjustment) seconds.")
+//            showAlert(title: "Manual Calibration", message: "Adjusted by \(adjustment) seconds.")
         }
     )
 }

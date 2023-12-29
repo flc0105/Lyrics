@@ -136,6 +136,20 @@ struct LyricsView: View {
         .toast(isPresenting: $uiPreferences.showToast){
             AlertToast(type: uiPreferences.toastType, title: uiPreferences.toastText)
         }
+        .contextMenu {
+            Button("Search Lyrics") {
+                handleSearchLyrics()
+            }
+            Button("1 Second Faster") {
+                handle1SecondFaster()
+            }
+            Button("1 Second Slower") {
+                handle1SecondSlower()
+            }
+            Button("Manual Calibration") {
+                handleManualCalibration()
+            }
+        }
         .gesture(TapGesture(count: 2).onEnded {
             debugPrint("Double clicked")
             
