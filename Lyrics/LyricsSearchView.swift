@@ -130,16 +130,32 @@ struct LyricsSearchView: View {
             onClose()
             debugPrint("Subwindow closed")
         }
+
     }
     
     
     // Method to handle the search button tap.
     private func searchButtonTapped() {
+
+        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if let currentTrack = currentTrack, !currentTrack.isEmpty {
+                searchText = currentTrack
+            } else {
+                DispatchQueue.main.async {
+                    showAlert(title: "Search lyrics", message: "Keyword input is empty and there are no currently playing tracks.")
+                }
+                return
+            }
+        }
+
         // Call the searchSong function with the entered keyword.
         searchSong(keyword: searchText) { result, error in
             // Handle any error returned by the search.
             if let error = error {
                 print("Error: \(error)")
+                DispatchQueue.main.async {
+                    showAlert(title: "Search lyrics", message: "Failed to search lyrics.")
+                }
                 return
             }
             // If there are songs in the result, update the searchResults state.

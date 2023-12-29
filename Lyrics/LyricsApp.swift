@@ -32,7 +32,6 @@ class UIPreferences: ObservableObject {
     @Published var isWindowSticky: Bool = false
     
     
-    
     @Published var showToast: Bool = false;
     
     @Published var toastText: String = "";
@@ -139,6 +138,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func showSubwindow(_ sender: Any?) {
         // Check if the subwindow is already visible
         guard subwindow == nil else {
+            
+            // If the subwindow is already visible, activate it
+            subwindow.makeKeyAndOrderFront(nil)
+            
             return
         }
         
