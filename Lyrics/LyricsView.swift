@@ -150,6 +150,10 @@ struct LyricsView: View {
                 }
             ))
             
+            Button("Open Player") {
+                openApp(withBundleIdentifier: getPlayerNameConfig())
+            }
+            
             Divider()
             
             Button("1 Second Faster") {

@@ -25,6 +25,19 @@ enum PlaybackState: Int {
     case stopped = 3
 }
 
+
+/**
+ An enumeration representing media playback commands.
+
+ - Case `kMRPlay`: Represents the command to play.
+ - Case `kMRPause`: Represents the command to pause.
+ - Case `kMRTogglePlayPause`: Represents the command to toggle between play and pause.
+ - Case `kMRStop`: Represents the command to stop playback.
+ - Case `kMRNextTrack`: Represents the command to skip to the next track.
+ - Case `kMRPreviousTrack`: Represents the command to go back to the previous track.
+
+ - Note: The raw values are integers starting from 0.
+ */
 enum MRCommand: Int {
     case kMRPlay = 0
     case kMRPause = 1
@@ -285,27 +298,43 @@ func registerNotifications() {
 }
 
 
+/**
+ Toggles play/pause for the currently active media player.
+
+ - Note: This function relies on `MRMediaRemoteGetNowPlayingInfo` and `MRMediaRemoteSendCommand` to interact with the media player.
+
+ - Warning: This function assumes the availability of certain media player information. Make sure to handle potential errors and edge cases appropriately.
+
+ - Important: This function uses the `getPlayerNameConfig` function to determine the expected player bundle identifier. Ensure that this function is correctly implemented.
+
+ - Returns: None
+ */
 func togglePlayPause() {
-    
+    // Get now playing information using MRMediaRemoteGetNowPlayingInfo
     MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main, { information in
-        
+
+        // Deserialize protobuf data to extract bundle information
         let bundleInfo = Dynamic._MRNowPlayingClientProtobuf.initWithData(information["kMRMediaRemoteNowPlayingInfoClientPropertiesData"])
-        
+
+        // Check if the now playing information is empty
         if information.isEmpty {
             debugPrint("Now playing information is empty.")
             return
         }
-        
+
+        // Extract player name and bundle identifier
         let playerName = bundleInfo.displayName.asString ?? ""
         let playerBundleIdentifier = bundleInfo.bundleIdentifier.asString ?? ""
         debugPrint("playerName=\(playerName)")
+
+        // Check if the detected player is the expected player
         if playerBundleIdentifier != getPlayerNameConfig() {
             debugPrint("Player not detected running: \(playerName)")
             return
         }
-        
+
+        // Send the toggle play/pause command using MRMediaRemoteSendCommand
         let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
         debugPrint("MRMediaRemoteSendCommand=\(result)")
     })
-    
 }

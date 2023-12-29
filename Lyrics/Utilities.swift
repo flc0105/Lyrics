@@ -322,6 +322,15 @@ func copyToClipboard(_ text: String) {
 }
 
 
+/**
+ Shows a regular toast message.
+
+ - Parameter text: The text to be displayed in the toast.
+ - Note: This function sets the UIPreferences shared instance properties to display a regular toast.
+ - SeeAlso: [AlertToast GitHub Repository](https://github.com/elai950/AlertToast)
+
+ - Returns: None
+ */
 func showRegularToast(_ text: String) {
     UIPreferences.shared.toastType = .regular
     UIPreferences.shared.showToast = true
@@ -329,8 +338,63 @@ func showRegularToast(_ text: String) {
 }
 
 
+/**
+ Shows a success toast message.
+
+ - Parameter text: The text to be displayed in the toast.
+ - Note: This function sets the UIPreferences shared instance properties to display a success toast with a green check mark.
+
+ - Returns: None
+ */
 func showSuccessToast(_ text: String) {
     UIPreferences.shared.toastType = .complete(Color.green)
     UIPreferences.shared.showToast = true
     UIPreferences.shared.toastText = text
+}
+
+
+/**
+ Restarts the application.
+
+ - Note: This function uses the `/usr/bin/open` command to restart the app with its current bundle identifier.
+   It then terminates the current instance of the app.
+
+ - Returns: None
+ */
+func restartApp() {
+    if let bundleIdentifier = Bundle.main.bundleIdentifier {
+        let path = "/usr/bin/open"
+        let arguments = ["-b", bundleIdentifier]
+        Process.launchedProcess(launchPath: path, arguments: arguments)
+    }
+    NSApp.terminate(nil)
+}
+
+
+/**
+ Opens the application with the specified bundle identifier.
+
+ - Parameter bundleIdentifier: The bundle identifier of the application to be opened.
+ - Note: This function uses NSWorkspace to open the application. It prints an error message if the application is not found.
+
+ - Returns: None
+ */
+func openApp(withBundleIdentifier bundleIdentifier: String) {
+    let workspace = NSWorkspace.shared
+    
+    if let appURL = workspace.urlForApplication(withBundleIdentifier: bundleIdentifier) {
+        
+        NSWorkspace.shared.openApplication(at: appURL, configuration: .init()) { (app, error) in
+            if let error = error {
+                print("Error opening application: \(error.localizedDescription)")
+            }
+        }
+        //        do {
+        //            try NSWorkspace.shared.launchApplication(at: appURL, options: .andHide, configuration: [:])
+        //        } catch {
+        //            print("Error opening application: \(error.localizedDescription)")
+        //        }
+    } else {
+        print("Application not found with bundle identifier: \(bundleIdentifier)")
+    }
 }

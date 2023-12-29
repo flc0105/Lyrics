@@ -134,14 +134,24 @@ struct LyricsSearchView: View {
     }
     
     
-    // Method to handle the search button tap.
+    /**
+     Handles the search button tap event.
+
+     - Note: This function performs a series of checks and actions when the search button is tapped.
+             It validates the entered keyword, displays an alert if needed, and calls the `searchSong` function to perform the actual search.
+
+     - Returns: None
+     */
     private func searchButtonTapped() {
 
+        // Check if the trimmed searchText is empty
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            // If empty, use the current track as the search text if available; otherwise, show an alert.
             if let currentTrack = currentTrack, !currentTrack.isEmpty {
                 searchText = currentTrack
             } else {
                 DispatchQueue.main.async {
+                    // Show an alert indicating that keyword input is empty, and there are no currently playing tracks.
                     showAlert(title: "Search lyrics", message: "Keyword input is empty and there are no currently playing tracks.")
                 }
                 return
@@ -150,14 +160,18 @@ struct LyricsSearchView: View {
 
         // Call the searchSong function with the entered keyword.
         searchSong(keyword: searchText) { result, error in
+            
             // Handle any error returned by the search.
             if let error = error {
                 print("Error: \(error)")
                 DispatchQueue.main.async {
+                    
+                    // Show an alert indicating that the search failed.
                     showAlert(title: "Search lyrics", message: "Failed to search lyrics.")
                 }
                 return
             }
+            
             // If there are songs in the result, update the searchResults state.
             if let songs = result?.songs {
                 DispatchQueue.main.async {
@@ -168,6 +182,7 @@ struct LyricsSearchView: View {
             }
         }
     }
+    
 }
 
 

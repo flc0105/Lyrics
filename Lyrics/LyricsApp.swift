@@ -32,12 +32,14 @@ class UIPreferences: ObservableObject {
     @Published var isWindowSticky: Bool = false
     
     
+    /// A boolean flag indicating whether the toast should be displayed or not.
     @Published var showToast: Bool = false;
     
+    /// The text content of the toast message.
     @Published var toastText: String = "";
     
+    /// The type of the toast, which determines its appearance and behavior.
     @Published var toastType: AlertToast.AlertType = .regular;
-    
 }
 
 
@@ -215,14 +217,7 @@ func handleConfigurePlayer() {
                    defaultValue: playerNameConfig,
                    onFirstButtonTap: { inputText in
         UserDefaults.standard.set(inputText, forKey: "PlayerPackageName")
-        showAlert(title: "Settings Saved", message: "Changes will take effect after restarting the application.", firstButtonTitle: "Restart", onFirstButtonTap: {
-            if let bundleIdentifier = Bundle.main.bundleIdentifier {
-                let path = "/usr/bin/open"
-                let arguments = ["-b", bundleIdentifier]
-                Process.launchedProcess(launchPath: path, arguments: arguments)
-            }
-            NSApp.terminate(nil)
-        }, showCancelButton: true)
+        showAlert(title: "Settings Saved", message: "Changes will take effect after restarting the application.", firstButtonTitle: "Restart", onFirstButtonTap: { restartApp() }, showCancelButton: true)
     })
 }
 
