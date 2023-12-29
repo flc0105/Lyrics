@@ -139,9 +139,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
     
-    func applicationDidBecomeActive(_ notification: Notification) {
-       debugPrint("Aplication did become active.")
-    }
+//    func applicationDidBecomeActive(_ notification: Notification) {
+//       debugPrint("Aplication did become active.")
+//    }
     
     
     /// Toggles the stickiness of the main window.
@@ -189,6 +189,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         subwindow.center()
         
         subwindow.makeKeyAndOrderFront(nil)
+        
+        subwindow.title = "Search Lyrics"
     }
     
     

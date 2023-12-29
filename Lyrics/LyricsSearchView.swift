@@ -116,6 +116,17 @@ struct LyricsSearchView: View {
         }
         // Add padding to the entire view.
         .padding()
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { notification in
+            if let window = notification.object as? NSWindow {
+                if window.title == "Search Lyrics" {
+                    print("Subwindow became key.")
+                    if let currentTrack = currentTrack, !currentTrack.isEmpty {
+                        searchText = currentTrack
+                    }
+                }
+            }
+        }
+
         // Set the initial value of searchText to currentTrack when the view appears.
         .onAppear() {
             // Check if currentTrack is not empty before setting the searchText and triggering the search logic.
@@ -124,6 +135,7 @@ struct LyricsSearchView: View {
                 // Simulate a button tap to trigger the search logic.
                 searchButtonTapped()
             }
+            
         }
         // Perform actions when the view disappears.
         .onDisappear {
@@ -146,16 +158,22 @@ struct LyricsSearchView: View {
 
         // Check if the trimmed searchText is empty
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            // If empty, use the current track as the search text if available; otherwise, show an alert.
-            if let currentTrack = currentTrack, !currentTrack.isEmpty {
-                searchText = currentTrack
-            } else {
-                DispatchQueue.main.async {
-                    // Show an alert indicating that keyword input is empty, and there are no currently playing tracks.
-                    showAlert(title: "Search lyrics", message: "Keyword input is empty and there are no currently playing tracks.")
-                }
-                return
-            }
+            
+            showAlert(title: "Search Lyrics", message: "Keyword input is empty.")
+            return
+            
+//            // If empty, use the current track as the search text if available; otherwise, show an alert.
+//            if let currentTrack = currentTrack, !currentTrack.isEmpty {
+//                searchText = currentTrack
+//            } else {
+//                DispatchQueue.main.async {
+//                    // Show an alert indicating that keyword input is empty, and there are no currently playing tracks.
+//                    showAlert(title: "Search lyrics", message: "Keyword input is empty and there are no currently playing tracks.")
+//                }
+//                return
+//            }
+            
+            
         }
 
         // Call the searchSong function with the entered keyword.
