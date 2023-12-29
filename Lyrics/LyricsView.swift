@@ -170,6 +170,12 @@ struct LyricsView: View {
             
 
         }
+        .onDisappear() {
+            debugPrint("Main window closed.")
+            NSApplication.shared.windows.forEach { window in
+                window.close()
+            }
+        }
         .gesture(TapGesture(count: 2).onEnded {
             debugPrint("Double clicked")
             
