@@ -346,11 +346,11 @@ func showRegularToast(_ text: String) {
 
  - Returns: None
  */
-func showSuccessToast(_ text: String) {
-    UIPreferences.shared.toastType = .complete(Color.green)
-    UIPreferences.shared.showToast = true
-    UIPreferences.shared.toastText = text
-}
+//func showSuccessToast(_ text: String) {
+//    UIPreferences.shared.toastType = .complete(Color.green)
+//    UIPreferences.shared.showToast = true
+//    UIPreferences.shared.toastText = text
+//}
 
 
 /**

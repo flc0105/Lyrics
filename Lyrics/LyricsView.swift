@@ -138,6 +138,7 @@ struct LyricsView: View {
         }
         .contextMenu {
             Button("Search Lyrics") {
+                NSApp.activate(ignoringOtherApps: true)
                 handleSearchLyrics()
             }
             

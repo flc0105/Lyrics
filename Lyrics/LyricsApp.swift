@@ -113,6 +113,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Remove the resizable style mask to disable resizing the window.
         window.styleMask.remove(.resizable)
+        
+        
+        // 监听窗口右击事件
+        NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { event in
+            let isActive = NSApp.isActive
+            print("Right click detected, isActive=\(isActive)")
+            if !isActive {
+                DispatchQueue.main.async {
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+            }
+            return event //$0
+        }
+        
+        
     }
     
     
@@ -122,6 +137,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// - Returns: `true` if the application should terminate after the last window is closed; otherwise, `false`.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+       debugPrint("Aplication did become active.")
     }
     
     
@@ -202,7 +221,7 @@ func handleManualCalibration() {
                 return
             }
             startTime -= adjustment
-            showSuccessToast("Adjusted by \(adjustment) seconds.")
+            showRegularToast("Adjusted by \(adjustment) seconds.")
 //            showAlert(title: "Manual Calibration", message: "Adjusted by \(adjustment) seconds.")
         }
     )
