@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "dynamic",
+      "kind" : "remoteSourceControl",
+      "location" : "http://github.com/mhdhejazi/Dynamic.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "772883073d044bc754d401cabb6574624eb3778f"
+      }
+    },
+    {
       "identity" : "hotkey",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/soffes/HotKey",

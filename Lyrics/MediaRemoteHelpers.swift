@@ -7,6 +7,7 @@
 
 import Foundation
 import Cocoa
+import Dynamic
 
 
 var currentTrack: String?
@@ -285,6 +286,26 @@ func registerNotifications() {
 
 
 func togglePlayPause() {
-    let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
-    debugPrint("MRMediaRemoteSendCommand=\(result)")
+    
+    MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main, { information in
+        
+        let bundleInfo = Dynamic._MRNowPlayingClientProtobuf.initWithData(information["kMRMediaRemoteNowPlayingInfoClientPropertiesData"])
+        
+        if information.isEmpty {
+            debugPrint("Now playing information is empty.")
+            return
+        }
+        
+        let playerName = bundleInfo.displayName.asString ?? ""
+        let playerBundleIdentifier = bundleInfo.bundleIdentifier.asString ?? ""
+        debugPrint("playerName=\(playerName)")
+        if playerBundleIdentifier != getPlayerNameConfig() {
+            debugPrint("Player not detected running: \(playerName)")
+            return
+        }
+        
+        let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
+        debugPrint("MRMediaRemoteSendCommand=\(result)")
+    })
+    
 }
