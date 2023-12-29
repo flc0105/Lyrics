@@ -24,6 +24,15 @@ enum PlaybackState: Int {
     case stopped = 3
 }
 
+enum MRCommand: Int {
+    case kMRPlay = 0
+    case kMRPause = 1
+    case kMRTogglePlayPause = 2
+    case kMRStop = 3
+    case kMRNextTrack = 4
+    case kMRPreviousTrack = 5
+}
+
 
 // Create a bundle for the MediaRemote framework
 let bundle = CFBundleCreate(kCFAllocatorDefault, NSURL(fileURLWithPath: "/System/Library/PrivateFrameworks/MediaRemote.framework"))
@@ -47,6 +56,12 @@ let MRMediaRemoteRegisterForNowPlayingNotifications = unsafeBitCast(MRMediaRemot
 let MRMediaRemoteUnregisterForNowPlayingNotificationsPointer = CFBundleGetFunctionPointerForName(bundle, "MRMediaRemoteUnregisterForNowPlayingNotifications" as CFString)
 typealias MRMediaRemoteUnregisterForNowPlayingNotificationsFunction = @convention(c) (DispatchQueue) -> Void
 let MRMediaRemoteUnregisterForNowPlayingNotifications = unsafeBitCast(MRMediaRemoteUnregisterForNowPlayingNotificationsPointer, to: MRMediaRemoteUnregisterForNowPlayingNotificationsFunction.self)
+
+
+// Get function pointer for MRMediaRemoteSendCommand
+let MRMediaRemoteSendCommandPointer = CFBundleGetFunctionPointerForName(bundle, "MRMediaRemoteSendCommand" as CFString)
+typealias MRMediaRemoteSendCommandFunction = @convention(c) (Int, AnyObject?) -> Bool
+let MRMediaRemoteSendCommand = unsafeBitCast(MRMediaRemoteSendCommandPointer, to: MRMediaRemoteSendCommandFunction.self)
 
 
 /// Retrieves information about the currently playing media.
@@ -266,4 +281,10 @@ func registerNotifications() {
     } else {
         debugPrint("Application is not running.")
     }
+}
+
+
+func togglePlayPause() {
+    let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
+    debugPrint("MRMediaRemoteSendCommand=\(result)")
 }

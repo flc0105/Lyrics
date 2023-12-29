@@ -136,6 +136,11 @@ struct LyricsView: View {
         .toast(isPresenting: $uiPreferences.showToast){
             AlertToast(type: uiPreferences.toastType, title: uiPreferences.toastText)
         }
+        .gesture(TapGesture(count: 2).onEnded {
+            debugPrint("Double clicked")
+            
+            togglePlayPause()
+        })
     }
     
     
