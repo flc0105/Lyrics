@@ -115,17 +115,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.styleMask.remove(.resizable)
         
         
-        // 监听窗口右击事件
-        NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { event in
-            let isActive = NSApp.isActive
-            print("Right click detected, isActive=\(isActive)")
-            if !isActive {
-                DispatchQueue.main.async {
-                    NSApp.activate(ignoringOtherApps: true)
-                }
-            }
-            return event //$0
-        }
+//        // 监听窗口右击事件
+//        NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { event in
+//            let isActive = NSApp.isActive
+//            print("Right click detected, isActive=\(isActive)")
+//            if !isActive {
+//                DispatchQueue.main.async {
+//                    NSApp.activate(ignoringOtherApps: true)
+//                }
+//            }
+//            return event //$0
+//        }
         
         
     }
@@ -147,9 +147,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Toggles the stickiness of the main window.
     /// - Parameter sender: The object that triggered the action.
     @objc func toggleWindowSticky(_ sender: Any?) {
-        if let window = NSApplication.shared.keyWindow {
+        
+//        NSApplication.shared.keyWindow
+        if let window = NSApplication.shared.windows.first {
             window.level = (window.level == .floating) ? .normal : .floating
             UIPreferences.shared.isWindowSticky = (window.level == .floating)
+        } else {
+            debugPrint("Window topping failure.")
         }
     }
     
@@ -211,6 +215,7 @@ func handle1SecondSlower() {
 
 /// Handles manual input for calibration.
 func handleManualCalibration() {
+    NSApp.activate(ignoringOtherApps: true)
     showInputAlert(
         title: "Manual Calibration",
         message: "Enter the time adjustment value (e.g., +0.5 or -0.5). Positive values speed up the playback, and negative values slow down the playback.",
@@ -257,12 +262,14 @@ func handleConfigureLyricsFolder() {
 
 /// Opens the lyrics search window.
 func handleSearchLyrics() {
+    NSApp.activate(ignoringOtherApps: true)
     NSApp.sendAction(#selector(AppDelegate.showSubwindow(_:)), to: nil, from: nil)
 }
 
 
 /// Handles toggling sticky window.
 func handleToggleSticky(isEnabled: Bool) {
+    NSApp.activate(ignoringOtherApps: true)
     UIPreferences.shared.isWindowSticky = isEnabled
     NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil)
     debugPrint("isWindowSticky=\(UIPreferences.shared.isWindowSticky)")
