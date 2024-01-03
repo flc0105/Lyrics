@@ -121,7 +121,12 @@ struct LyricsSearchView: View {
                 if window.title == "Search Lyrics" {
                     print("Subwindow became key.")
                     if let currentTrack = currentTrack, !currentTrack.isEmpty {
-                        searchText = currentTrack
+                        
+                        if searchText != currentTrack {
+                            searchText = currentTrack
+                            searchButtonTapped()
+                        }
+                        
                     }
                 }
             }
@@ -158,22 +163,8 @@ struct LyricsSearchView: View {
 
         // Check if the trimmed searchText is empty
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            
             showAlert(title: "Search Lyrics", message: "Keyword input is empty.")
             return
-            
-//            // If empty, use the current track as the search text if available; otherwise, show an alert.
-//            if let currentTrack = currentTrack, !currentTrack.isEmpty {
-//                searchText = currentTrack
-//            } else {
-//                DispatchQueue.main.async {
-//                    // Show an alert indicating that keyword input is empty, and there are no currently playing tracks.
-//                    showAlert(title: "Search lyrics", message: "Keyword input is empty and there are no currently playing tracks.")
-//                }
-//                return
-//            }
-            
-            
         }
 
         // Call the searchSong function with the entered keyword.
