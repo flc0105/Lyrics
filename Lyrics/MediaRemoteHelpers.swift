@@ -329,12 +329,45 @@ func togglePlayPause() {
 
         // Check if the detected player is the expected player
         if playerBundleIdentifier != getPlayerNameConfig() {
-            debugPrint("Player not detected running: \(playerName)")
+            debugPrint("Specified player not detected running: \(getPlayerNameConfig())")
+            showAlert(title: "Error", message: "Specified player not detected running: \(getPlayerNameConfig())")
             return
         }
 
         // Send the toggle play/pause command using MRMediaRemoteSendCommand
         let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
+        debugPrint("MRMediaRemoteSendCommand=\(result)")
+    })
+}
+
+
+func togglePlayNext() {
+    // Get now playing information using MRMediaRemoteGetNowPlayingInfo
+    MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main, { information in
+
+        // Deserialize protobuf data to extract bundle information
+        let bundleInfo = Dynamic._MRNowPlayingClientProtobuf.initWithData(information["kMRMediaRemoteNowPlayingInfoClientPropertiesData"])
+
+        // Check if the now playing information is empty
+        if information.isEmpty {
+            debugPrint("Now playing information is empty.")
+            return
+        }
+
+        // Extract player name and bundle identifier
+        let playerName = bundleInfo.displayName.asString ?? ""
+        let playerBundleIdentifier = bundleInfo.bundleIdentifier.asString ?? ""
+        debugPrint("playerName=\(playerName)")
+
+        // Check if the detected player is the expected player
+        if playerBundleIdentifier != getPlayerNameConfig() {
+            debugPrint("Specified player not detected running: \(getPlayerNameConfig())")
+            showAlert(title: "Error", message: "Specified player not detected running: \(getPlayerNameConfig())")
+            return
+        }
+
+        // Send the toggle play/pause command using MRMediaRemoteSendCommand
+        let result = MRMediaRemoteSendCommand(MRCommand.kMRNextTrack.rawValue, nil)
         debugPrint("MRMediaRemoteSendCommand=\(result)")
     })
 }
