@@ -166,6 +166,7 @@ struct LyricsView: View {
             }
             
             Menu("Lyrics File") {
+                
                 Button("Open Lyrics File") {
                     openLyricsFile()
                 }
@@ -425,7 +426,17 @@ private func viewTrackInformation() {
         if info.isEmpty {
             showAlert(title: "Error", message: "There are no tracks currently playing.")
         } else {
-            showImageAlert(title: "Track Information", message: "Artist: \(info["Artist"] ?? "Unknown Artist")\nTitle: \(info["Title"] ?? "Unknown Title")\nAlbum: \(info["Album"] ?? "Unknown Album")\nDuration: \(info["Duration"] ?? "Unknown Duration")")
+            showImageAlert(
+                title: "Track Information",
+                message:
+                    """
+                    Artist: \(info["Artist"] ?? "Unknown Artist")
+                    Title: \(info["Title"] ?? "Unknown Title")
+                    Album: \(info["Album"] ?? "Unknown Album")
+                    Duration: \(info["Duration"] ?? "Unknown Duration")
+                    """,
+                image: info["Artwork"] as? NSImage
+            )
         }
     }
 }

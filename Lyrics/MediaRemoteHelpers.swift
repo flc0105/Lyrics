@@ -392,6 +392,8 @@ func getTrackInformation(completion: @escaping ([String: Any]) -> Void) {
         nowPlayingInfo["Album"] = information["kMRMediaRemoteNowPlayingInfoAlbum"] as? String ?? ""
         nowPlayingInfo["Duration"] = secondsToFormattedString(information["kMRMediaRemoteNowPlayingInfoDuration"] as? TimeInterval ?? 0.0)
         
+        let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
+        nowPlayingInfo["Artwork"] = artworkData.flatMap { NSImage(data: $0) }
         
         // Call the completion handler with the updated dictionary
         completion(nowPlayingInfo)

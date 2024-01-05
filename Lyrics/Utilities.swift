@@ -42,7 +42,7 @@ func showAlert(title: String, message: String, firstButtonTitle: String = "OK", 
 }
 
 
-func showImageAlert(title: String, message: String, firstButtonTitle: String = "OK", onFirstButtonTap: (() -> Void)? = nil, showCancelButton: Bool = false) {
+func showImageAlert(title: String, message: String, firstButtonTitle: String = "OK", onFirstButtonTap: (() -> Void)? = nil, showCancelButton: Bool = false, image: NSImage?) {
     // Create an NSAlert instance
     let alert = NSAlert()
     // Set the title, informative text, and style of the alert
@@ -52,11 +52,12 @@ func showImageAlert(title: String, message: String, firstButtonTitle: String = "
     // Add the first button with the specified title
     alert.addButton(withTitle: firstButtonTitle)
     
-    if let image = UIPreferences.shared.coverImage {
+//    if let image = UIPreferences.shared.coverImage {
+    if let image = image {
            let imageView = NSImageView(image: image)
            imageView.frame = NSRect(x: 0, y: 0, width: 200, height: 200)
            alert.accessoryView = imageView
-       }
+    }
     
     // Add a cancel button if specified
     if showCancelButton {
