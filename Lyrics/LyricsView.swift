@@ -150,12 +150,25 @@ struct LyricsView: View {
                 }
             ))
             
-            Button("Open Player") {
-                openApp(withBundleIdentifier: getPlayerNameConfig())
+            
+            Menu("Player") {
+                Button("Open Player") {
+                    openApp(withBundleIdentifier: getPlayerNameConfig())
+                }
+                
+                Button("Play Next Track") {
+                    togglePlayNext()
+                }
             }
             
-            Button("Play Next Track") {
-                togglePlayNext()
+            Menu("Lyrics File") {
+                Button("Open Lyrics File") {
+                    openLyricsFile()
+                }
+                
+                Button("Show Lyrics File In Finder") {
+                    showLyricsFileInFinder()
+                }
             }
             
             Divider()
@@ -172,7 +185,7 @@ struct LyricsView: View {
             
             Divider()
             
-
+            
         }
         .onDisappear() {
             debugPrint("Main window closed.")
@@ -364,4 +377,38 @@ func initializeLyrics(withDefault lyrics: [LyricInfo]) {
     startTime = Date().timeIntervalSinceReferenceDate
     // Set the lyrics to the provided default set
     viewModel.lyrics = lyrics
+}
+
+
+private func openLyricsFile() {
+    guard let currentTrack = currentTrack else {
+        NSApp.activate(ignoringOtherApps: true)
+        showAlert(title: "Error", message: "There are no tracks currently playing.")
+        return
+    }
+    let fileURL = URL(fileURLWithPath: getLyricsPath(track: currentTrack))
+    if FileManager.default.fileExists(atPath: fileURL.path) {
+        NSWorkspace.shared.open(fileURL)
+        
+    } else {
+        NSApp.activate(ignoringOtherApps: true)
+        showAlert(title: "Error", message: "Lyrics not found.")
+    }
+    
+}
+
+
+private func showLyricsFileInFinder() {
+    guard let currentTrack = currentTrack else {
+        NSApp.activate(ignoringOtherApps: true)
+        showAlert(title: "Error", message: "There are no tracks currently playing.")
+        return
+    }
+    let fileURL = URL(fileURLWithPath: getLyricsPath(track: currentTrack))
+    if FileManager.default.fileExists(atPath: fileURL.path) {
+        NSWorkspace.shared.activateFileViewerSelecting([fileURL])
+    } else {
+        NSApp.activate(ignoringOtherApps: true)
+        showAlert(title: "Error", message: "Lyrics not found.")
+    }
 }

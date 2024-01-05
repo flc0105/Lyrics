@@ -295,6 +295,12 @@ func getLyricsPath(artist: String, title: String) -> String {
 }
 
 
+func getLyricsPath(track: String) -> String {
+    let fileName = secureFileName(fileName: "\(track).lrc")
+    return "\(getLyricsFolderPathConfig())\(fileName)"
+}
+
+
 /// Saves lyrics to a file with a specific file name.
 ///
 /// - Parameters:
