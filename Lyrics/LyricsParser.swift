@@ -59,12 +59,31 @@ class LyricsParser {
                     // Extract the lyric text
                     let lyricText = line.replacingOccurrences(of: "\\[([0-9]+:[0-9]+.[0-9]+)\\]", with: "", options: .regularExpression, range: nil)
                     
+//                    // Create a LyricInfo instance and add it to the array
+//                    if let lastTimestamp = lyrics.last?.playbackTime, timestamp == lastTimestamp {
+//                        lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: true))
+//                    } else {
+//                        lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: false))
+//                    }
+//                    
                     // Create a LyricInfo instance and add it to the array
+                    
+                    
+                    // 如果这行歌词的时间戳和上一行一样，并且上一行不为空则是翻译歌词
                     if let lastTimestamp = lyrics.last?.playbackTime, timestamp == lastTimestamp {
-                        lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: true))
+        
+                        
+                        if let lastLyricText = lyrics.last?.text, !lastLyricText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: true))
+                        } else {
+                            lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: false))
+                        }
+
+                        
                     } else {
                         lyrics.append(LyricInfo(id: lyrics.count, text: lyricText, isCurrent: false, playbackTime: timestamp, isTranslation: false))
                     }
+                    
                 }
             }
         }

@@ -308,6 +308,8 @@ func startLyrics() {
             // Get the parsed lyrics array
             let lyrics = parser.getLyrics()
             
+            print(lyrics)
+            
             // Update the lyrics in the view model
             viewModel.lyrics = lyrics
             
