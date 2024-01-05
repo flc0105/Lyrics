@@ -371,3 +371,29 @@ func togglePlayNext() {
         debugPrint("MRMediaRemoteSendCommand=\(result)")
     })
 }
+
+
+func getTrackInformation(completion: @escaping ([String: Any]) -> Void) {
+    var nowPlayingInfo: [String: Any] = [:]
+    
+    // Call the Media Remote framework to get now playing information
+    MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main) { information in
+        
+        // Check if the information is empty
+        if information.isEmpty {
+            // Call the completion handler with an empty dictionary
+            completion(nowPlayingInfo)
+            return
+        }
+        
+        // Extract information from the result
+        nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
+        nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
+        nowPlayingInfo["Album"] = information["kMRMediaRemoteNowPlayingInfoAlbum"] as? String ?? ""
+        nowPlayingInfo["Duration"] = secondsToFormattedString(information["kMRMediaRemoteNowPlayingInfoDuration"] as? TimeInterval ?? 0.0)
+        
+        
+        // Call the completion handler with the updated dictionary
+        completion(nowPlayingInfo)
+    }
+}

@@ -159,6 +159,10 @@ struct LyricsView: View {
                 Button("Play Next Track") {
                     togglePlayNext()
                 }
+                
+                Button("View Track Information") {
+                    viewTrackInformation()
+                }
             }
             
             Menu("Lyrics File") {
@@ -410,5 +414,18 @@ private func showLyricsFileInFinder() {
     } else {
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "Lyrics not found.")
+    }
+}
+
+
+private func viewTrackInformation() {
+    NSApp.activate(ignoringOtherApps: true)
+    
+    getTrackInformation() { info in
+        if info.isEmpty {
+            showAlert(title: "Error", message: "There are no tracks currently playing.")
+        } else {
+            showImageAlert(title: "Track Information", message: "Artist: \(info["Artist"] ?? "Unknown Artist")\nTitle: \(info["Title"] ?? "Unknown Title")\nAlbum: \(info["Album"] ?? "Unknown Album")\nDuration: \(info["Duration"] ?? "Unknown Duration")")
+        }
     }
 }

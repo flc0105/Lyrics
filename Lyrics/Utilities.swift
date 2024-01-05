@@ -42,6 +42,37 @@ func showAlert(title: String, message: String, firstButtonTitle: String = "OK", 
 }
 
 
+func showImageAlert(title: String, message: String, firstButtonTitle: String = "OK", onFirstButtonTap: (() -> Void)? = nil, showCancelButton: Bool = false) {
+    // Create an NSAlert instance
+    let alert = NSAlert()
+    // Set the title, informative text, and style of the alert
+    alert.messageText = title
+    alert.informativeText = message
+    alert.alertStyle = .informational
+    // Add the first button with the specified title
+    alert.addButton(withTitle: firstButtonTitle)
+    
+    if let image = UIPreferences.shared.coverImage {
+           let imageView = NSImageView(image: image)
+           imageView.frame = NSRect(x: 0, y: 0, width: 200, height: 200)
+           alert.accessoryView = imageView
+       }
+    
+    // Add a cancel button if specified
+    if showCancelButton {
+        alert.addButton(withTitle: "Cancel")
+    }
+    
+    // Run the modal and handle the response
+    let response = alert.runModal()
+    
+    // Execute the closure associated with the first button if clicked
+    if response == .alertFirstButtonReturn, let onFirstButtonTap = onFirstButtonTap {
+        onFirstButtonTap()
+    }
+}
+
+
 /// Displays an informational alert with an input field and customizable title and message.
 ///
 /// - Parameters:
