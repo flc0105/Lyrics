@@ -178,14 +178,20 @@ struct LyricsView: View {
             
             Divider()
             
-            Button("1 Second Faster") {
-                handle1SecondFaster()
-            }
-            Button("1 Second Slower") {
-                handle1SecondSlower()
-            }
-            Button("Manual Calibration") {
-                handleManualCalibration()
+            Menu("Calibration") {
+                Button("1 Second Faster") {
+                    handle1SecondFaster()
+                }
+                Button("1 Second Slower") {
+                    handle1SecondSlower()
+                }
+                Button("Manual Calibration") {
+                    handleManualCalibration()
+                }
+                
+                Button("Recalibration") {
+                    handleRecalibration()
+                }
             }
             
             Divider()

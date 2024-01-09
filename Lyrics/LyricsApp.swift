@@ -214,6 +214,10 @@ func handle1SecondSlower() {
     showRegularToast("Rewind one second.")
 }
 
+func handleRecalibration() {
+    stopLyrics()
+    startLyrics()
+}
 
 /// Handles manual input for calibration.
 func handleManualCalibration() {
