@@ -97,6 +97,12 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
             return
         }
         
+        if let contentItemClass = objc_getClass("MRContentItem") as? MRContentItem.Type {
+            let item = contentItemClass.init(nowPlayingInfo: information)
+            let calculatedPlaybackPosition = item?.metadata.calculatedPlaybackPosition
+            print("calculatedPlaybackPosition=\(calculatedPlaybackPosition ?? 0.0)")
+        }
+
         // Extract information from the result
         nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""

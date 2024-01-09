@@ -115,17 +115,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.styleMask.remove(.resizable)
         
         
-//        // 监听窗口右击事件
-//        NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { event in
-//            let isActive = NSApp.isActive
-//            print("Right click detected, isActive=\(isActive)")
-//            if !isActive {
-//                DispatchQueue.main.async {
-//                    NSApp.activate(ignoringOtherApps: true)
-//                }
-//            }
-//            return event //$0
-//        }
+        //        // 监听窗口右击事件
+        //        NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { event in
+        //            let isActive = NSApp.isActive
+        //            print("Right click detected, isActive=\(isActive)")
+        //            if !isActive {
+        //                DispatchQueue.main.async {
+        //                    NSApp.activate(ignoringOtherApps: true)
+        //                }
+        //            }
+        //            return event //$0
+        //        }
         
         
     }
@@ -139,16 +139,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
     
-//    func applicationDidBecomeActive(_ notification: Notification) {
-//       debugPrint("Aplication did become active.")
-//    }
+    //    func applicationDidBecomeActive(_ notification: Notification) {
+    //       debugPrint("Aplication did become active.")
+    //    }
     
     
     /// Toggles the stickiness of the main window.
     /// - Parameter sender: The object that triggered the action.
     @objc func toggleWindowSticky(_ sender: Any?) {
         
-//        NSApplication.shared.keyWindow
+        //        NSApplication.shared.keyWindow
         if let window = NSApplication.shared.windows.first {
             window.level = (window.level == .floating) ? .normal : .floating
             UIPreferences.shared.isWindowSticky = (window.level == .floating)
@@ -229,7 +229,7 @@ func handleManualCalibration() {
             }
             startTime -= adjustment
             showRegularToast("Adjusted by \(adjustment) seconds.")
-//            showAlert(title: "Manual Calibration", message: "Adjusted by \(adjustment) seconds.")
+            //            showAlert(title: "Manual Calibration", message: "Adjusted by \(adjustment) seconds.")
         }
     )
 }

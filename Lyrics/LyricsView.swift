@@ -308,8 +308,6 @@ func startLyrics() {
             // Get the parsed lyrics array
             let lyrics = parser.getLyrics()
             
-            print(lyrics)
-            
             // Update the lyrics in the view model
             viewModel.lyrics = lyrics
             
@@ -431,14 +429,16 @@ private func viewTrackInformation() {
             showImageAlert(
                 title: "Track Information",
                 message:
-                    """
-                    Artist: \(info["Artist"] ?? "Unknown Artist")
-                    Title: \(info["Title"] ?? "Unknown Title")
-                    Album: \(info["Album"] ?? "Unknown Album")
-                    Duration: \(info["Duration"] ?? "Unknown Duration")
-                    """,
+                        """
+                        Artist: \(info["Artist"] ?? "Unknown Artist")
+                        Title: \(info["Title"] ?? "Unknown Title")
+                        Album: \(info["Album"] ?? "Unknown Album")
+                        Duration: \(info["Duration"] ?? "Unknown Duration")
+                        """,
                 image: info["Artwork"] as? NSImage
             )
+            
         }
     }
+    
 }

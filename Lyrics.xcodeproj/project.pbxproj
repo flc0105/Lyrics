@@ -31,6 +31,8 @@
 		6C1C37222B3151E20040A77D /* Lyrics.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Lyrics.entitlements; sourceTree = "<group>"; };
 		6C1C37282B3152DB0040A77D /* MediaRemoteHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRemoteHelpers.swift; sourceTree = "<group>"; };
 		6C96D6162B396F8F00C0CD1F /* LyricsSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsSearchView.swift; sourceTree = "<group>"; };
+		6CE0A4622B4D15AF00D6C4D0 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
+		6CF839DB2B4C0BEA00225B47 /* MRContentItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MRContentItem.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,8 @@
 				6C021A342B3D099400917D2C /* Utilities.swift */,
 				6C021A362B3D16DE00917D2C /* LyricsParser.swift */,
 				6C021A382B3D184A00917D2C /* LyricsView.swift */,
+				6CF839DB2B4C0BEA00225B47 /* MRContentItem.h */,
+				6CE0A4622B4D15AF00D6C4D0 /* BridgingHeader.h */,
 			);
 			path = Lyrics;
 			sourceTree = "<group>";
@@ -238,6 +242,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OBJC_BRIDGING_HEADER = Lyrics/BridgingHeader.h;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -294,6 +299,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = Lyrics/BridgingHeader.h;
 			};
 			name = Release;
 		};

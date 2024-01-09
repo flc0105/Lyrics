@@ -101,6 +101,9 @@ struct LyricsSearchView: View {
                             DispatchQueue.main.async {
                                 showTextAreaAlert(title: "Save Lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
                                     saveLyricsToFile(lyrics: text, artist: artist, title: title)
+                                    
+                                    //                                    startLyrics()
+                                    
                                 }
                             }
                         } else {
@@ -131,7 +134,7 @@ struct LyricsSearchView: View {
                 }
             }
         }
-
+        
         // Set the initial value of searchText to currentTrack when the view appears.
         .onAppear() {
             // Check if currentTrack is not empty before setting the searchText and triggering the search logic.
@@ -147,26 +150,26 @@ struct LyricsSearchView: View {
             onClose()
             debugPrint("Subwindow closed")
         }
-
+        
     }
     
     
     /**
      Handles the search button tap event.
-
+     
      - Note: This function performs a series of checks and actions when the search button is tapped.
-             It validates the entered keyword, displays an alert if needed, and calls the `searchSong` function to perform the actual search.
-
+     It validates the entered keyword, displays an alert if needed, and calls the `searchSong` function to perform the actual search.
+     
      - Returns: None
      */
     private func searchButtonTapped() {
-
+        
         // Check if the trimmed searchText is empty
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             showAlert(title: "Search Lyrics", message: "Keyword input is empty.")
             return
         }
-
+        
         // Call the searchSong function with the entered keyword.
         searchSong(keyword: searchText) { result, error in
             
