@@ -272,7 +272,7 @@ struct LyricsView: View {
 /// Starts displaying lyrics for the currently playing track.
 func startLyrics() {
     // Record the start time of lyric display
-    let lyricStartTime = Date().timeIntervalSinceReferenceDate
+//    let lyricStartTime = Date().timeIntervalSinceReferenceDate
     
     // Retrieve now playing information
     getNowPlayingInfo { nowPlayingInfo in
@@ -315,6 +315,7 @@ func startLyrics() {
             
             // 3 seconds later, update and calibrate the playback time
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                let lyricStartTime = Date().timeIntervalSinceReferenceDate
                 getNowPlayingInfo { nowPlayingInfo in
                     guard var updatedPlaybackTime = nowPlayingInfo["ElapsedTime"] as? TimeInterval else {
                         debugPrint("Failed to update playback time.")

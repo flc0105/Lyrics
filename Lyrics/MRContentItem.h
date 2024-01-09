@@ -1,7 +1,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 @interface MRContentItemMetadata : NSObject
-@property CGFloat calculatedPlaybackPosition;
+@property double calculatedPlaybackPosition;
 @end
 
 @interface MRContentItem : NSObject

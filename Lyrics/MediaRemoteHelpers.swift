@@ -101,12 +101,13 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
             let item = contentItemClass.init(nowPlayingInfo: information)
             let calculatedPlaybackPosition = item?.metadata.calculatedPlaybackPosition
             print("calculatedPlaybackPosition=\(calculatedPlaybackPosition ?? 0.0)")
+            nowPlayingInfo["ElapsedTime"] = calculatedPlaybackPosition ?? 0.0
         }
 
         // Extract information from the result
         nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
-        nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
+//        nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
         
         if (UIPreferences.shared.isCoverImageVisible) {
             let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
