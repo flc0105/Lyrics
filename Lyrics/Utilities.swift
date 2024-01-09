@@ -270,6 +270,12 @@ func getPlayerNameConfig() -> String {
 }
 
 
+func getGlobalOffsetConfig() -> TimeInterval {
+    UserDefaults.standard.register(defaults: ["GlobalOffset": 1.0])
+    return UserDefaults.standard.double(forKey: "GlobalOffset")
+}
+
+
 /// Retrieves the stored lyrics folder path from UserDefaults.
 ///
 /// If the folder path is not found in UserDefaults, it registers a default value ("/Users/flc/Desktop/Lyrics/").

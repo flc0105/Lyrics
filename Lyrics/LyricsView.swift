@@ -366,7 +366,7 @@ private func findStartingLyricIndex(_ startTime: TimeInterval) -> Int {
 /// - Parameter playbackTime: The new playback time.
 func updatePlaybackTime(playbackTime: TimeInterval) {
     // Set the start time based on the playback time
-    startTime = Date.timeIntervalSinceReferenceDate - playbackTime
+    startTime = Date.timeIntervalSinceReferenceDate - (playbackTime + getGlobalOffsetConfig())
     // Reset the lyric index to the beginning
     LyricsViewModel.shared.currentIndex = 0
     // Find and set the starting lyric index

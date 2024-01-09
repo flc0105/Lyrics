@@ -235,6 +235,24 @@ func handleManualCalibration() {
 }
 
 
+func handleConfigureGlobalOffset() {
+    NSApp.activate(ignoringOtherApps: true)
+    showInputAlert(
+        title: "Global Offset",
+        message: "Please set the adjustment value for the delay in displaying lyrics that acts globally (usually set to 1 second faster).",
+        defaultValue: "\(getGlobalOffsetConfig())",
+        onFirstButtonTap: { input in
+            guard let adjustment = TimeInterval(input) else {
+                showAlert(title: "Global Offset", message: "Please enter a valid numeric value.")
+                return
+            }
+            UserDefaults.standard.set(adjustment, forKey: "GlobalOffset")
+            showRegularToast("Settings saved.")
+        }
+    )
+}
+
+
 /// Handles configuring the player.
 func handleConfigurePlayer() {
     let playerNameConfig = getPlayerNameConfig()
@@ -352,6 +370,7 @@ struct LyricsApp: App {
             CommandMenu("Settings") {
                 Button("Configure Player") { handleConfigurePlayer() }
                 Button("Configure Lyrics Folder") { handleConfigureLyricsFolder() }
+                Button("Configure Global Offset") { handleConfigureGlobalOffset() }
             }
             CommandMenu("Utilities") {
                 Button("Search Lyrics") { handleSearchLyrics() }.keyboardShortcut("s")

@@ -101,7 +101,7 @@ struct LyricsSearchView: View {
                             DispatchQueue.main.async {
                                 showTextAreaAlert(title: "Save Lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
                                     saveLyricsToFile(lyrics: text, artist: artist, title: title)
-                                
+                                    stopLyrics()
                                     startLyrics()
                                 }
                             }
