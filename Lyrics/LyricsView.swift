@@ -278,7 +278,7 @@ struct LyricsView: View {
 /// Starts displaying lyrics for the currently playing track.
 func startLyrics() {
     // Record the start time of lyric display
-//    let lyricStartTime = Date().timeIntervalSinceReferenceDate
+    //    let lyricStartTime = Date().timeIntervalSinceReferenceDate
     
     // Retrieve now playing information
     getNowPlayingInfo { nowPlayingInfo in
@@ -392,47 +392,86 @@ func initializeLyrics(withDefault lyrics: [LyricInfo]) {
 }
 
 
+/**
+ Opens the lyrics file corresponding to the current track.
+ 
+ If there is no current track, it shows an error alert. If the lyrics file exists, it opens the file using NSWorkspace;
+ otherwise, it shows an error alert indicating that the lyrics were not found.
+ */
 private func openLyricsFile() {
+    // Check if there is a current track
     guard let currentTrack = currentTrack else {
+        // Activate the application and show an error alert if no tracks are currently playing
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "There are no tracks currently playing.")
         return
     }
+    
+    // Create a file URL based on the lyrics path for the current track
     let fileURL = URL(fileURLWithPath: getLyricsPath(track: currentTrack))
+    
+    // Check if the lyrics file exists
     if FileManager.default.fileExists(atPath: fileURL.path) {
+        // Open the lyrics file using NSWorkspace
         NSWorkspace.shared.open(fileURL)
-        
     } else {
+        // Activate the application and show an error alert if the lyrics file is not found
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "Lyrics not found.")
     }
-    
 }
 
 
+/**
+ Shows the lyrics file corresponding to the current track in the Finder.
+ 
+ If there is no current track, it shows an error alert. If the lyrics file exists,
+ it opens the Finder and selects the file; otherwise, it shows an error alert indicating
+ that the lyrics were not found.
+ */
 private func showLyricsFileInFinder() {
+    // Check if there is a current track
     guard let currentTrack = currentTrack else {
+        // Activate the application and show an error alert if no tracks are currently playing
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "There are no tracks currently playing.")
         return
     }
+    
+    // Create a file URL based on the lyrics path for the current track
     let fileURL = URL(fileURLWithPath: getLyricsPath(track: currentTrack))
+    
+    // Check if the lyrics file exists
     if FileManager.default.fileExists(atPath: fileURL.path) {
+        // Open the Finder and select the lyrics file
         NSWorkspace.shared.activateFileViewerSelecting([fileURL])
     } else {
+        // Activate the application and show an error alert if the lyrics file is not found
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "Lyrics not found.")
     }
 }
 
 
+/**
+ Displays track information including artist, title, album, duration, and artwork.
+ 
+ Activates the application and retrieves track information using `getTrackInformation`.
+ Shows an error alert if there are no tracks currently playing; otherwise, displays a detailed alert
+ with the retrieved track information and artwork, if available.
+ */
 private func viewTrackInformation() {
+    // Activate the application
     NSApp.activate(ignoringOtherApps: true)
     
+    // Retrieve track information
     getTrackInformation() { info in
+        // Check if the track information is empty
         if info.isEmpty {
+            // Show an error alert if there are no tracks currently playing
             showAlert(title: "Error", message: "There are no tracks currently playing.")
         } else {
+            // Display a detailed alert with track information and artwork
             showImageAlert(
                 title: "Track Information",
                 message:
@@ -444,8 +483,7 @@ private func viewTrackInformation() {
                         """,
                 image: info["Artwork"] as? NSImage
             )
-            
         }
     }
-    
 }
+

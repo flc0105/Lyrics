@@ -90,6 +90,9 @@ class LyricsParser {
         
         // Sort the lyrics array based on timestamps
         lyrics.sort { $0.playbackTime < $1.playbackTime }
+        
+        // Add a blank line at the end of the lyrics
+        lyrics.append(LyricInfo(id: lyrics.count, text: "", isCurrent: false, playbackTime: 0, isTranslation: false))
     }
     
     /// Gets the parsed lyrics as an array of LyricInfo.

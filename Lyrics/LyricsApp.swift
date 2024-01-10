@@ -113,21 +113,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Remove the resizable style mask to disable resizing the window.
         window.styleMask.remove(.resizable)
-        
-        
-        //        // 监听窗口右击事件
-        //        NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { event in
-        //            let isActive = NSApp.isActive
-        //            print("Right click detected, isActive=\(isActive)")
-        //            if !isActive {
-        //                DispatchQueue.main.async {
-        //                    NSApp.activate(ignoringOtherApps: true)
-        //                }
-        //            }
-        //            return event //$0
-        //        }
-        
-        
     }
     
     
@@ -139,16 +124,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
     
-    //    func applicationDidBecomeActive(_ notification: Notification) {
-    //       debugPrint("Aplication did become active.")
-    //    }
-    
     
     /// Toggles the stickiness of the main window.
     /// - Parameter sender: The object that triggered the action.
     @objc func toggleWindowSticky(_ sender: Any?) {
-        
-        //        NSApplication.shared.keyWindow
         if let window = NSApplication.shared.windows.first {
             window.level = (window.level == .floating) ? .normal : .floating
             UIPreferences.shared.isWindowSticky = (window.level == .floating)
@@ -214,10 +193,20 @@ func handle1SecondSlower() {
     showRegularToast("Rewind one second.")
 }
 
+
+/**
+ Handles the recalibration process.
+ 
+ This function stops displaying lyrics and then starts displaying lyrics again.
+ */
 func handleRecalibration() {
+    // Stop displaying lyrics
     stopLyrics()
+    
+    // Start displaying lyrics
     startLyrics()
 }
+
 
 /// Handles manual input for calibration.
 func handleManualCalibration() {
@@ -233,25 +222,41 @@ func handleManualCalibration() {
             }
             startTime -= adjustment
             showRegularToast("Adjusted by \(adjustment) seconds.")
-            //            showAlert(title: "Manual Calibration", message: "Adjusted by \(adjustment) seconds.")
         }
     )
 }
 
 
+/**
+ Handles the configuration of the global offset.
+ 
+ This function activates the application, shows an input alert to set the adjustment value for the delay
+ in displaying lyrics globally, and saves the configuration to UserDefaults.
+ */
 func handleConfigureGlobalOffset() {
+    // Activate the application
     NSApp.activate(ignoringOtherApps: true)
+    
+    // Show an input alert for setting the global offset
     showInputAlert(
         title: "Global Offset",
         message: "Please set the adjustment value for the delay in displaying lyrics that acts globally (usually set to 1 second faster).",
         defaultValue: "\(getGlobalOffsetConfig())",
         onFirstButtonTap: { input in
+            
+            // Convert the input to TimeInterval
             guard let adjustment = TimeInterval(input) else {
+                
+                // Show an alert for invalid input
                 showAlert(title: "Global Offset", message: "Please enter a valid numeric value.")
                 return
             }
+            
+            // Save the adjustment value to UserDefaults
             UserDefaults.standard.set(adjustment, forKey: "GlobalOffset")
-            showRegularToast("Settings saved.")
+            
+            // Show a success alert
+            showAlert(title: "Settings Saved", message: "Global offset has been successfully set.")
         }
     )
 }

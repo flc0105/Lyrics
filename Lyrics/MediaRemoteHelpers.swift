@@ -28,14 +28,14 @@ enum PlaybackState: Int {
 
 /**
  An enumeration representing media playback commands.
-
+ 
  - Case `kMRPlay`: Represents the command to play.
  - Case `kMRPause`: Represents the command to pause.
  - Case `kMRTogglePlayPause`: Represents the command to toggle between play and pause.
  - Case `kMRStop`: Represents the command to stop playback.
  - Case `kMRNextTrack`: Represents the command to skip to the next track.
  - Case `kMRPreviousTrack`: Represents the command to go back to the previous track.
-
+ 
  - Note: The raw values are integers starting from 0.
  */
 enum MRCommand: Int {
@@ -97,17 +97,22 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
             return
         }
         
+        // Check if the MRContentItem class can be obtained
         if let contentItemClass = objc_getClass("MRContentItem") as? MRContentItem.Type {
+            // Attempt to create an instance of MRContentItem with nowPlayingInfo
             let item = contentItemClass.init(nowPlayingInfo: information)
+            // Access calculated playback position from the metadata of the MRContentItem
             let calculatedPlaybackPosition = item?.metadata.calculatedPlaybackPosition
-            print("calculatedPlaybackPosition=\(calculatedPlaybackPosition ?? 0.0)")
+            // Print the calculated playback position
+            debugPrint("calculatedPlaybackPosition=\(calculatedPlaybackPosition ?? 0.0)")
+            // Update the nowPlayingInfo dictionary with the elapsed time
             nowPlayingInfo["ElapsedTime"] = calculatedPlaybackPosition ?? 0.0
         }
-
+        
         // Extract information from the result
         nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
-//        nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
+        //        nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
         
         if (UIPreferences.shared.isCoverImageVisible) {
             let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
@@ -307,40 +312,40 @@ func registerNotifications() {
 
 /**
  Toggles play/pause for the currently active media player.
-
+ 
  - Note: This function relies on `MRMediaRemoteGetNowPlayingInfo` and `MRMediaRemoteSendCommand` to interact with the media player.
-
+ 
  - Warning: This function assumes the availability of certain media player information. Make sure to handle potential errors and edge cases appropriately.
-
+ 
  - Important: This function uses the `getPlayerNameConfig` function to determine the expected player bundle identifier. Ensure that this function is correctly implemented.
-
+ 
  - Returns: None
  */
 func togglePlayPause() {
     // Get now playing information using MRMediaRemoteGetNowPlayingInfo
     MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main, { information in
-
+        
         // Deserialize protobuf data to extract bundle information
         let bundleInfo = Dynamic._MRNowPlayingClientProtobuf.initWithData(information["kMRMediaRemoteNowPlayingInfoClientPropertiesData"])
-
+        
         // Check if the now playing information is empty
         if information.isEmpty {
             debugPrint("Now playing information is empty.")
             return
         }
-
+        
         // Extract player name and bundle identifier
         let playerName = bundleInfo.displayName.asString ?? ""
         let playerBundleIdentifier = bundleInfo.bundleIdentifier.asString ?? ""
         debugPrint("playerName=\(playerName)")
-
+        
         // Check if the detected player is the expected player
         if playerBundleIdentifier != getPlayerNameConfig() {
             debugPrint("Specified player not detected running: \(getPlayerNameConfig())")
             showAlert(title: "Error", message: "Specified player not detected running: \(getPlayerNameConfig())")
             return
         }
-
+        
         // Send the toggle play/pause command using MRMediaRemoteSendCommand
         let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
         debugPrint("MRMediaRemoteSendCommand=\(result)")
@@ -348,39 +353,55 @@ func togglePlayPause() {
 }
 
 
+/**
+ Toggles the play for the next track.
+ 
+ This function retrieves now playing information using MRMediaRemoteGetNowPlayingInfo,
+ extracts bundle information, and sends a command to play the next track if the specified player is detected.
+ */
 func togglePlayNext() {
     // Get now playing information using MRMediaRemoteGetNowPlayingInfo
     MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main, { information in
-
+        
         // Deserialize protobuf data to extract bundle information
         let bundleInfo = Dynamic._MRNowPlayingClientProtobuf.initWithData(information["kMRMediaRemoteNowPlayingInfoClientPropertiesData"])
-
+        
         // Check if the now playing information is empty
         if information.isEmpty {
             debugPrint("Now playing information is empty.")
             return
         }
-
+        
         // Extract player name and bundle identifier
         let playerName = bundleInfo.displayName.asString ?? ""
         let playerBundleIdentifier = bundleInfo.bundleIdentifier.asString ?? ""
         debugPrint("playerName=\(playerName)")
-
+        
         // Check if the detected player is the expected player
         if playerBundleIdentifier != getPlayerNameConfig() {
             debugPrint("Specified player not detected running: \(getPlayerNameConfig())")
             showAlert(title: "Error", message: "Specified player not detected running: \(getPlayerNameConfig())")
             return
         }
-
-        // Send the toggle play/pause command using MRMediaRemoteSendCommand
+        
+        // Send a command to play the next track
         let result = MRMediaRemoteSendCommand(MRCommand.kMRNextTrack.rawValue, nil)
         debugPrint("MRMediaRemoteSendCommand=\(result)")
     })
 }
 
 
+/**
+ Retrieves information about the currently playing track.
+ 
+ This function calls the Media Remote framework to get now playing information and
+ extracts relevant details such as artist, title, album, duration, and artwork.
+ The information is then passed to the provided completion handler.
+ 
+ - Parameter completion: A closure that takes a dictionary containing track information as its argument.
+ */
 func getTrackInformation(completion: @escaping ([String: Any]) -> Void) {
+    // Initialize a dictionary to store now playing information
     var nowPlayingInfo: [String: Any] = [:]
     
     // Call the Media Remote framework to get now playing information
@@ -399,6 +420,7 @@ func getTrackInformation(completion: @escaping ([String: Any]) -> Void) {
         nowPlayingInfo["Album"] = information["kMRMediaRemoteNowPlayingInfoAlbum"] as? String ?? ""
         nowPlayingInfo["Duration"] = secondsToFormattedString(information["kMRMediaRemoteNowPlayingInfoDuration"] as? TimeInterval ?? 0.0)
         
+        // Extract and convert artwork data to NSImage
         let artworkData = information["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data
         nowPlayingInfo["Artwork"] = artworkData.flatMap { NSImage(data: $0) }
         

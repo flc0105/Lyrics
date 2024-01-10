@@ -42,21 +42,35 @@ func showAlert(title: String, message: String, firstButtonTitle: String = "OK", 
 }
 
 
+/**
+ Displays an alert with an optional image, providing a callback when the first button is tapped.
+ 
+ - Parameters:
+ - title: The title of the alert.
+ - message: The informative text of the alert.
+ - firstButtonTitle: The title of the first button (default is "OK").
+ - onFirstButtonTap: A closure to be executed when the first button is tapped (default is nil).
+ - showCancelButton: A flag indicating whether to show a cancel button (default is false).
+ - image: The image to be displayed in the alert (default is nil).
+ */
 func showImageAlert(title: String, message: String, firstButtonTitle: String = "OK", onFirstButtonTap: (() -> Void)? = nil, showCancelButton: Bool = false, image: NSImage?) {
+    
     // Create an NSAlert instance
     let alert = NSAlert()
+    
     // Set the title, informative text, and style of the alert
     alert.messageText = title
     alert.informativeText = message
     alert.alertStyle = .informational
+    
     // Add the first button with the specified title
     alert.addButton(withTitle: firstButtonTitle)
     
-//    if let image = UIPreferences.shared.coverImage {
+    // Add an accessory view (image) if provided
     if let image = image {
-           let imageView = NSImageView(image: image)
-           imageView.frame = NSRect(x: 0, y: 0, width: 200, height: 200)
-           alert.accessoryView = imageView
+        let imageView = NSImageView(image: image)
+        imageView.frame = NSRect(x: 0, y: 0, width: 200, height: 200)
+        alert.accessoryView = imageView
     }
     
     // Add a cancel button if specified
@@ -106,9 +120,9 @@ func showInputAlert(title: String, message: String, defaultValue: String, onFirs
             showAlert(title: "Settings Not Saved", message: "Your input is empty.")
             return
         }
-//        guard inputText != defaultValue else {
-//            return  // No action if the input is the same as the default value
-//        }
+        //        guard inputText != defaultValue else {
+        //            return  // No action if the input is the same as the default value
+        //        }
         onFirstButtonTap(inputText)
     }
 }
@@ -333,8 +347,17 @@ func getLyricsPath(artist: String, title: String) -> String {
 }
 
 
+/**
+ Constructs and returns the path for the LRC (Lyrics) file based on the provided track name.
+ 
+ - Parameter track: The name of the track.
+ - Returns: The file path for the LRC file.
+ */
 func getLyricsPath(track: String) -> String {
+    // Create the file name by using the provided track name
     let fileName = secureFileName(fileName: "\(track).lrc")
+    
+    // Construct and return the full file path
     return "\(getLyricsFolderPathConfig())\(fileName)"
 }
 
@@ -368,11 +391,11 @@ func copyToClipboard(_ text: String) {
 
 /**
  Shows a regular toast message.
-
+ 
  - Parameter text: The text to be displayed in the toast.
  - Note: This function sets the UIPreferences shared instance properties to display a regular toast.
  - SeeAlso: [AlertToast GitHub Repository](https://github.com/elai950/AlertToast)
-
+ 
  - Returns: None
  */
 func showRegularToast(_ text: String) {
@@ -383,26 +406,11 @@ func showRegularToast(_ text: String) {
 
 
 /**
- Shows a success toast message.
-
- - Parameter text: The text to be displayed in the toast.
- - Note: This function sets the UIPreferences shared instance properties to display a success toast with a green check mark.
-
- - Returns: None
- */
-//func showSuccessToast(_ text: String) {
-//    UIPreferences.shared.toastType = .complete(Color.green)
-//    UIPreferences.shared.showToast = true
-//    UIPreferences.shared.toastText = text
-//}
-
-
-/**
  Restarts the application.
-
+ 
  - Note: This function uses the `/usr/bin/open` command to restart the app with its current bundle identifier.
-   It then terminates the current instance of the app.
-
+ It then terminates the current instance of the app.
+ 
  - Returns: None
  */
 func restartApp() {
@@ -417,10 +425,10 @@ func restartApp() {
 
 /**
  Opens the application with the specified bundle identifier.
-
+ 
  - Parameter bundleIdentifier: The bundle identifier of the application to be opened.
  - Note: This function uses NSWorkspace to open the application. It prints an error message if the application is not found.
-
+ 
  - Returns: None
  */
 func openApp(withBundleIdentifier bundleIdentifier: String) {
@@ -433,11 +441,7 @@ func openApp(withBundleIdentifier bundleIdentifier: String) {
                 print("Error opening application: \(error.localizedDescription)")
             }
         }
-        //        do {
-        //            try NSWorkspace.shared.launchApplication(at: appURL, options: .andHide, configuration: [:])
-        //        } catch {
-        //            print("Error opening application: \(error.localizedDescription)")
-        //        }
+        
     } else {
         print("Application not found with bundle identifier: \(bundleIdentifier)")
     }
