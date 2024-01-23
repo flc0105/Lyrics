@@ -97,7 +97,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
         
         // Hide the minimize button in the top-left corner of the window.
-        window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
+//        window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         
         // Center the window on the screen.
         window.center()
@@ -331,13 +331,26 @@ func handleToggleShowPlaybackProgress(isEnabled: Bool) {
     UserDefaults.standard.set(UIPreferences.shared.isPlaybackProgressVisible, forKey: "IsPlaybackProgressVisible")
 }
 
+func handleActivateApp() {
+    // 如果窗口最小化，先将窗口还原
+    if let window = NSApp.windows.first {
+        if (!window.isVisible) {
+            window.deminiaturize(nil)
+        }
+    }
+
+    // 激活应用程序
+    NSApp.activate(ignoringOtherApps: true)
+}
+
 
 // The main entry point for the LyricsApp.
 @main
 struct LyricsApp: App {
     
     // Define a hotkey for the application
-    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: {NSApp.activate(ignoringOtherApps: true)})
+    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: handleActivateApp)
+//    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: {NSApp.activate(ignoringOtherApps: true)})
     
     // The app delegate for managing the application's lifecycle.
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
