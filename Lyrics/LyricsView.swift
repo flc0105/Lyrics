@@ -179,6 +179,10 @@ struct LyricsView: View {
             Divider()
             
             Menu("Calibration") {
+                
+                Button("Recalibration") {
+                    handleRecalibration()
+                }
                 Button("1 Second Faster") {
                     handle1SecondFaster()
                 }
@@ -189,9 +193,7 @@ struct LyricsView: View {
                     handleManualCalibration()
                 }
                 
-                Button("Recalibration") {
-                    handleRecalibration()
-                }
+                
             }
             
             Divider()

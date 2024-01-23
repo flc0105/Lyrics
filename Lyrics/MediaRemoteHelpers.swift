@@ -349,6 +349,17 @@ func togglePlayPause() {
         // Send the toggle play/pause command using MRMediaRemoteSendCommand
         let result = MRMediaRemoteSendCommand(MRCommand.kMRTogglePlayPause.rawValue, nil)
         debugPrint("MRMediaRemoteSendCommand=\(result)")
+        
+        // Show a success Toast notification if the command was successful
+        //        if result {
+        //            showRegularToast("Toggle Play/Pause successful.")
+        //        }
+        if result {
+            getPlaybackState { isPlaying in
+                let message = isPlaying ? "Playback paused." : "Playback resumed."
+                showRegularToast(message)
+            }
+        }
     })
 }
 
@@ -387,6 +398,10 @@ func togglePlayNext() {
         // Send a command to play the next track
         let result = MRMediaRemoteSendCommand(MRCommand.kMRNextTrack.rawValue, nil)
         debugPrint("MRMediaRemoteSendCommand=\(result)")
+        
+        if result {
+            showRegularToast("Next track playing.")
+        }
     })
 }
 

@@ -205,8 +205,10 @@ func handleRecalibration() {
     
     // Start displaying lyrics
     startLyrics()
+    
+    // Show a successful Toast notification
+    showRegularToast("Recalibration successful.")
 }
-
 
 /// Handles manual input for calibration.
 func handleManualCalibration() {
@@ -302,6 +304,10 @@ func handleToggleSticky(isEnabled: Bool) {
     UIPreferences.shared.isWindowSticky = isEnabled
     NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil)
     debugPrint("isWindowSticky=\(UIPreferences.shared.isWindowSticky)")
+    
+    // Show a Toast notification
+    let toastMessage = UIPreferences.shared.isWindowSticky ? "Window is now sticky." : "Window is no longer sticky."
+    showRegularToast(toastMessage)
 }
 
 
