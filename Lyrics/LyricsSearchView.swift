@@ -103,6 +103,7 @@ struct LyricsSearchView: View {
                                     saveLyricsToFile(lyrics: text, artist: artist, title: title)
                                     // Lyrics load immediately after saving.
                                     stopLyrics()
+                                    // TODO: 判断播放状态
                                     startLyrics()
                                 }
                             }
@@ -139,7 +140,7 @@ struct LyricsSearchView: View {
         .onAppear() {
             // Check if currentTrack is not empty before setting the searchText and triggering the search logic.
             if let currentTrack = currentTrack, !currentTrack.isEmpty {
-                searchText = currentTrack
+                searchText = currentTrack //FIXME: 播放器启动时currentTrack为空
                 // Simulate a button tap to trigger the search logic.
                 searchButtonTapped()
             }

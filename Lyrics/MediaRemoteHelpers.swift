@@ -11,6 +11,8 @@ import Dynamic
 
 
 var currentTrack: String?
+var currentTrackArtist: String?
+var currentTrackTitle: String?
 
 
 /// Enum representing different playback states for a media application.
@@ -195,6 +197,8 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         // Check if the current track is nil or if it's the same as the new track
         if currentTrack == nil {
             currentTrack = track
+            currentTrackArtist = artist
+            currentTrackTitle = title
             return
         }
         
@@ -203,6 +207,8 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         } else {
             debugPrint("Track change detected: \(String(describing: currentTrack)) -> \(track)")
             currentTrack = track
+            currentTrackArtist = artist
+            currentTrackTitle = title
             
             // Check playback state
             getPlaybackState { isPlaying in

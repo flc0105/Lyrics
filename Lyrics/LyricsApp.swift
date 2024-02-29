@@ -28,6 +28,8 @@ class UIPreferences: ObservableObject {
     /// A boolean indicating whether the playback progress is visible.
     @Published var isPlaybackProgressVisible: Bool = isPlaybackProgressVisibleConfig()
     
+    @Published var willAutoCreateArtistDirectory: Bool = autoCreateArtistDirectory()
+    
     /// A boolean indicating whether the window is sticky.
     @Published var isWindowSticky: Bool = false
     
@@ -97,7 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
         
         // Hide the minimize button in the top-left corner of the window.
-//        window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
+        //        window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         
         // Center the window on the screen.
         window.center()
@@ -200,6 +202,9 @@ func handle1SecondSlower() {
  This function stops displaying lyrics and then starts displaying lyrics again.
  */
 func handleRecalibration() {
+    
+    // TODO: 判断播放状态
+    
     // Stop displaying lyrics
     stopLyrics()
     
@@ -241,8 +246,8 @@ func handleConfigureGlobalOffset() {
     
     // Show an input alert for setting the global offset
     showInputAlert(
-        title: "Global Offset",
-        message: "Please set the adjustment value for the delay in displaying lyrics that acts globally (usually set to 1 second faster).",
+        title: "Configure Global Offset",
+        message: "Enter an offset for the global lyrics display (usually 1 second faster).",
         defaultValue: "\(getGlobalOffsetConfig())",
         onFirstButtonTap: { input in
             
@@ -268,7 +273,7 @@ func handleConfigureGlobalOffset() {
 func handleConfigurePlayer() {
     let playerNameConfig = getPlayerNameConfig()
     showInputAlert(title: "Configure Player",
-                   message: "Enter the app bundle identifier of the player used to register for notifications.",
+                   message: "Enter the app bundle identifier of your player.",
                    defaultValue: playerNameConfig,
                    onFirstButtonTap: { inputText in
         UserDefaults.standard.set(inputText, forKey: "PlayerPackageName")
@@ -331,6 +336,12 @@ func handleToggleShowPlaybackProgress(isEnabled: Bool) {
     UserDefaults.standard.set(UIPreferences.shared.isPlaybackProgressVisible, forKey: "IsPlaybackProgressVisible")
 }
 
+func handleToggleAutoCreateArtistDirectory(isEnabled: Bool) {
+    UIPreferences.shared.willAutoCreateArtistDirectory = isEnabled
+    debugPrint("willAutoCreateArtistDirectory=\(UIPreferences.shared.willAutoCreateArtistDirectory)")
+    UserDefaults.standard.set(UIPreferences.shared.willAutoCreateArtistDirectory, forKey: "autoCreateArtistDirectory")
+}
+
 func handleActivateApp() {
     // 如果窗口最小化，先将窗口还原
     if let window = NSApp.windows.first {
@@ -338,7 +349,7 @@ func handleActivateApp() {
             window.deminiaturize(nil)
         }
     }
-
+    
     // 激活应用程序
     NSApp.activate(ignoringOtherApps: true)
 }
@@ -350,7 +361,7 @@ struct LyricsApp: App {
     
     // Define a hotkey for the application
     let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: handleActivateApp)
-//    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: {NSApp.activate(ignoringOtherApps: true)})
+    //    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: {NSApp.activate(ignoringOtherApps: true)})
     
     // The app delegate for managing the application's lifecycle.
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -399,6 +410,14 @@ struct LyricsApp: App {
                 Button("Configure Player") { handleConfigurePlayer() }
                 Button("Configure Lyrics Folder") { handleConfigureLyricsFolder() }
                 Button("Configure Global Offset") { handleConfigureGlobalOffset() }
+                Toggle("Auto Create Artist Directory", isOn: Binding<Bool>(
+                    get: {
+                        return uiPreferences.willAutoCreateArtistDirectory
+                    },
+                    set: { isEnabled in
+                        handleToggleAutoCreateArtistDirectory(isEnabled: isEnabled)
+                    }
+                ))
             }
             CommandMenu("Utilities") {
                 Button("Search Lyrics") { handleSearchLyrics() }.keyboardShortcut("s")

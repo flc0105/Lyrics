@@ -44,7 +44,7 @@ struct LyricsView: View {
     @State private var isHovered = false
     
     var body: some View {
-        
+
         ZStack {
             GeometryReader { geometry in
                 if let image = uiPreferences.coverImage {
@@ -60,6 +60,8 @@ struct LyricsView: View {
                         .overlay(Color.black.opacity(0.5)) // Overlay the image with a semi-transparent black layer
                 }
             }
+            
+            
             ScrollView {
                 ScrollViewReader { proxy in
                     VStack(spacing: 10) {
@@ -120,6 +122,7 @@ struct LyricsView: View {
                 .padding()
             }
         }
+
         .onAppear {
             startTimer()
         }
@@ -295,6 +298,7 @@ func startLyrics() {
             debugPrint("Failed to get playback time.")
             return
         }
+    
         
         // Extract artist and title
         let artist = nowPlayingInfo["Artist"] as? String ?? ""

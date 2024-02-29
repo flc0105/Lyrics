@@ -322,6 +322,12 @@ func isPlaybackProgressVisibleConfig() -> Bool {
     return UserDefaults.standard.bool(forKey: "IsPlaybackProgressVisible")
 }
 
+func autoCreateArtistDirectory() -> Bool {
+    UserDefaults.standard.register(defaults: ["autoCreateArtistDirectory": true])
+    return UserDefaults.standard.bool(forKey: "autoCreateArtistDirectory")
+}
+
+
 
 /// Secure a file name by replacing illegal characters with underscores.
 /// - Parameter fileName: The original file name to be secured.
@@ -339,23 +345,28 @@ func secureFileName(fileName: String) -> String {
 ///   - artist: The artist of the song.
 ///   - title: The title of the song.
 /// - Returns: The file path for the LRC file.
+//func getLyricsPath(artist: String, title: String) -> String {
+//    // Create the file name by combining artist and title
+//    let fileName = secureFileName(fileName: "\(artist) - \(title).lrc")
+//    // Construct and return the full file path
+//    return "\(getLyricsFolderPathConfig())\(fileName)"
+//}
 func getLyricsPath(artist: String, title: String) -> String {
-    // Create the file name by combining artist and title
-    let fileName = secureFileName(fileName: "\(artist) - \(title).lrc")
-    // Construct and return the full file path
-    return "\(getLyricsFolderPathConfig())\(fileName)"
+    let fileName = "\(artist) - \(title).lrc"
+        let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: artist))/": ""
+        return "\(getLyricsFolderPathConfig())\(artistDirectory)\(secureFileName(fileName: fileName))"
 }
 
 
 /**
- Constructs and returns the path for the LRC (Lyrics) file based on the provided track name.
+ Constructs and returns the path for the LRC (Lyrics) file based on the provided track name. (Called when viewing a lyrics file)
  
  - Parameter track: The name of the track.
  - Returns: The file path for the LRC file.
  */
 func getLyricsPath(track: String) -> String {
     // Create the file name by using the provided track name
-    let fileName = secureFileName(fileName: "\(track).lrc")
+    let fileName = secureFileName(fileName: "\(track).lrc") // TODO: autoCreateArtistDirectory时添加artist目录
     
     // Construct and return the full file path
     return "\(getLyricsFolderPathConfig())\(fileName)"
@@ -368,15 +379,40 @@ func getLyricsPath(track: String) -> String {
 ///   - lyrics: The lyrics content to be saved.
 ///   - artist: The artist name for file naming.
 ///   - title: The title name for file naming.
+//func saveLyricsToFile(lyrics: String, artist: String, title: String) {
+//    let filePath = getLyricsFolderPathConfig() + secureFileName(fileName: (currentTrack ?? "\(artist) - \(title)")  + ".lrc")
+//    do {
+//        try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
+//        debugPrint("Lyrics saved to: \(filePath)")
+//    } catch {
+//        debugPrint("Error saving lyrics to file: \(error)")
+//    }
+//}
 func saveLyricsToFile(lyrics: String, artist: String, title: String) {
-    let filePath = getLyricsFolderPathConfig() + secureFileName(fileName: (currentTrack ?? "\(artist) - \(title)")  + ".lrc")
+    var artistToUse = currentTrackArtist ?? artist
+    var titleToUse = currentTrackTitle ?? title
+    let fileName = "\(artistToUse) - \(titleToUse).lrc"
+
+    let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: artistToUse))/" : ""
+    let artistFolderPath = getLyricsFolderPathConfig() + artistDirectory
+
     do {
+        if !FileManager.default.fileExists(atPath: artistFolderPath) {
+            try FileManager.default.createDirectory(atPath: artistFolderPath, withIntermediateDirectories: true, attributes: nil)
+        }
+
+        let filePath = artistFolderPath + secureFileName(fileName: fileName)
         try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
         debugPrint("Lyrics saved to: \(filePath)")
     } catch {
+        DispatchQueue.main.async {
+            showAlert(title: "Save lyrics", message: "Error saving lyrics to file: \(error)")
+        }
         debugPrint("Error saving lyrics to file: \(error)")
     }
 }
+
+
 
 
 /// Copies the given text to the clipboard.
