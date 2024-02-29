@@ -364,12 +364,17 @@ func getLyricsPath(artist: String, title: String) -> String {
  - Parameter track: The name of the track.
  - Returns: The file path for the LRC file.
  */
-func getLyricsPath(track: String) -> String {
-    // Create the file name by using the provided track name
-    let fileName = secureFileName(fileName: "\(track).lrc") // TODO: autoCreateArtistDirectory时添加artist目录
+func getCurrentTrackLyricsPath() -> String {
     
-    // Construct and return the full file path
-    return "\(getLyricsFolderPathConfig())\(fileName)"
+    let fileName = "\(currentTrackArtist!) - \(currentTrackTitle!).lrc"
+        let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: currentTrackArtist!))/": ""
+        return "\(getLyricsFolderPathConfig())\(artistDirectory)\(secureFileName(fileName: fileName))"
+    
+//    // Create the file name by using the provided track name
+//    let fileName = secureFileName(fileName: "\(track).lrc")
+//    
+//    // Construct and return the full file path
+//    return "\(getLyricsFolderPathConfig())\(fileName)"
 }
 
 

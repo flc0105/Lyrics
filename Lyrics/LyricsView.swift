@@ -414,7 +414,7 @@ private func openLyricsFile() {
     }
     
     // Create a file URL based on the lyrics path for the current track
-    let fileURL = URL(fileURLWithPath: getLyricsPath(track: currentTrack))
+    let fileURL = URL(fileURLWithPath: getCurrentTrackLyricsPath())
     
     // Check if the lyrics file exists
     if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -445,7 +445,7 @@ private func showLyricsFileInFinder() {
     }
     
     // Create a file URL based on the lyrics path for the current track
-    let fileURL = URL(fileURLWithPath: getLyricsPath(track: currentTrack))
+    let fileURL = URL(fileURLWithPath: getCurrentTrackLyricsPath())
     
     // Check if the lyrics file exists
     if FileManager.default.fileExists(atPath: fileURL.path) {
