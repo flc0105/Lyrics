@@ -304,7 +304,6 @@ func download(id: String, artist: String, title: String, album: String, completi
                 // Parse lyric text into LyricItem objects.
                 let lrcItems = parseLyric(lrcText)
                 let tlyricItems = parseLyric(tlyricText)
-                
                 // Combine and sort lyric items based on timestamp.
                 let combinedItems = (lrcItems + tlyricItems).sorted { $0.timestamp < $1.timestamp }
                 
@@ -362,19 +361,56 @@ func download(id: String, artist: String, title: String, album: String, completi
 /// Parses the lyric text and returns an array of lyric items.
 /// - Parameter lyricText: The raw lyric text to be parsed.
 /// - Returns: An array of `LyricItem` objects.
+//func parseLyric(_ lyricText: String) -> [LyricItem] {
+//    var lyricItems = [LyricItem]()
+//
+//    
+//    // Split the lyric text into lines.
+//    let lines = lyricText.components(separatedBy: "\n")
+//    
+//    
+//    
+//    // Iterate through each line to extract timestamp and content.
+//    for line in lines {
+//        
+//        debugPrint(line)
+//        // Use regular expression to extract timestamp and lyric content.
+//        if let match = line.range(of: "\\[(\\d+:\\d+\\.\\d+)\\]", options: .regularExpression) {
+//            let timestampString = String(line[match])
+//            let content = line.replacingOccurrences(of: "\\[(\\d+:\\d+\\.\\d+)\\]", with: "", options: .regularExpression)
+//            
+//            // Convert the timestamp to a time interval.
+//            if let timestamp = lyricsTimestampToTimeInterval(timestampString) {
+//                let lyricItem = LyricItem(timestamp: timestamp, content: content)
+//                lyricItems.append(lyricItem)
+//            }
+//        }
+//    }
+//    
+//    return lyricItems
+//}
 func parseLyric(_ lyricText: String) -> [LyricItem] {
     var lyricItems = [LyricItem]()
-    
+
     // Split the lyric text into lines.
     let lines = lyricText.components(separatedBy: "\n")
-    
+
     // Iterate through each line to extract timestamp and content.
     for line in lines {
         // Use regular expression to extract timestamp and lyric content.
-        if let match = line.range(of: "\\[(\\d+:\\d+\\.\\d+)\\]", options: .regularExpression) {
-            let timestampString = String(line[match])
-            let content = line.replacingOccurrences(of: "\\[(\\d+:\\d+\\.\\d+)\\]", with: "", options: .regularExpression)
-            
+        if let match = line.range(of: "\\[(\\d+:\\d+(\\.\\d+)?|\\d+:\\d+:\\d+)\\]", options: .regularExpression) {
+            var timestampString = String(line[match])
+            var content = line.replacingOccurrences(of: "\\[(\\d+:\\d+(\\.\\d+)?|\\d+:\\d+:\\d+)\\]", with: "", options: .regularExpression)
+
+            // Check if the timestamp has the format [数字:数字:数字].
+            if timestampString.contains(":") && timestampString.filter({$0 == ":"}).count == 2 {
+                // Find the last ":" index.
+                if let lastColonIndex = timestampString.lastIndex(of: ":") {
+                    // Replace the last ":" with ".".
+                    timestampString.replaceSubrange(lastColonIndex...lastColonIndex, with: ".")
+                }
+            }
+
             // Convert the timestamp to a time interval.
             if let timestamp = lyricsTimestampToTimeInterval(timestampString) {
                 let lyricItem = LyricItem(timestamp: timestamp, content: content)
@@ -382,6 +418,7 @@ func parseLyric(_ lyricText: String) -> [LyricItem] {
             }
         }
     }
-    
+
     return lyricItems
 }
+
