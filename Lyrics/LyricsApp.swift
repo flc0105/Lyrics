@@ -203,16 +203,59 @@ func handle1SecondSlower() {
  */
 func handleRecalibration() {
     
-    // TODO: 判断播放状态
+    getNowPlayingInfo { nowPlayingInfo in
+        // Check if the now playing information is empty
+        guard !nowPlayingInfo.isEmpty else {
+            showRegularToast("Now playing information is empty.")
+            return
+        }
+        
+        // Extract artist and title
+        let artist = nowPlayingInfo["Artist"] as? String ?? ""
+        let title = nowPlayingInfo["Title"] as? String ?? ""
+        let track = "\(artist) - \(title)"
+        
+        // Check if the current track is nil or if it's the same as the new track
+        if currentTrack == nil {
+            currentTrack = track
+            currentTrackArtist = artist
+            currentTrackTitle = title
+            return
+        }
+        
+        if track == currentTrack {
+            return
+        } else {
+            currentTrack = track
+            currentTrackArtist = artist
+            currentTrackTitle = title
+        }
+        
+        
+
+    }
     
-    // Stop displaying lyrics
-    stopLyrics()
     
-    // Start displaying lyrics
-    startLyrics()
     
-    // Show a successful Toast notification
-    showRegularToast("Recalibration successful.")
+    // Check playback state
+    getPlaybackState { isPlaying in
+        
+        if isPlaying {
+            // Stop displaying lyrics
+            stopLyrics()
+            
+            // Start displaying lyrics
+            startLyrics()
+            
+            // Show a successful Toast notification
+            showRegularToast("Recalibration successful.")
+        } else {
+            showRegularToast("Not playing.")
+        }
+    }
+
+    
+
 }
 
 /// Handles manual input for calibration.

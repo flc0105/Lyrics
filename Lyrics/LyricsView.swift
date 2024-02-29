@@ -406,7 +406,7 @@ func initializeLyrics(withDefault lyrics: [LyricInfo]) {
  */
 private func openLyricsFile() {
     // Check if there is a current track
-    guard let currentTrack = currentTrack else {
+    guard let track = currentTrack else {
         // Activate the application and show an error alert if no tracks are currently playing
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "There are no tracks currently playing.")
@@ -437,7 +437,7 @@ private func openLyricsFile() {
  */
 private func showLyricsFileInFinder() {
     // Check if there is a current track
-    guard let currentTrack = currentTrack else {
+    guard let track = currentTrack else {
         // Activate the application and show an error alert if no tracks are currently playing
         NSApp.activate(ignoringOtherApps: true)
         showAlert(title: "Error", message: "There are no tracks currently playing.")

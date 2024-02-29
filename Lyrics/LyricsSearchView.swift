@@ -102,9 +102,20 @@ struct LyricsSearchView: View {
                                 showTextAreaAlert(title: "Save Lyrics", message: "Are you sure you want to save the lyrics?", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
                                     saveLyricsToFile(lyrics: text, artist: artist, title: title)
                                     // Lyrics load immediately after saving.
-                                    stopLyrics()
-                                    // TODO: 判断播放状态
-                                    startLyrics()
+                                    
+                                    // Check playback state
+                                    getPlaybackState { isPlaying in
+                                        if isPlaying {
+                                            // Stop displaying lyrics
+                                            stopLyrics()
+                                            
+                                            // Start displaying lyrics
+                                            startLyrics()
+            
+                                        }
+                                    }
+                                    
+                    
                                 }
                             }
                         } else {
@@ -140,7 +151,7 @@ struct LyricsSearchView: View {
         .onAppear() {
             // Check if currentTrack is not empty before setting the searchText and triggering the search logic.
             if let currentTrack = currentTrack, !currentTrack.isEmpty {
-                searchText = currentTrack //FIXME: 播放器启动时currentTrack为空
+                searchText = currentTrack
                 // Simulate a button tap to trigger the search logic.
                 searchButtonTapped()
             }
