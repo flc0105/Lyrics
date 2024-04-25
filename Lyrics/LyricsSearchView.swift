@@ -66,7 +66,7 @@ struct LyricsSearchView: View {
         VStack {
             HStack {
                 // Text field for entering search keyword.
-                TextField("Enter search keyword", text: $searchText)
+                TextField("Enter search keyword", text: $searchText, onCommit: {searchButtonTapped()})
                 // Button to initiate the search.
                 Button("Search") {
                     // Call the searchButtonTapped method to handle search logic.
