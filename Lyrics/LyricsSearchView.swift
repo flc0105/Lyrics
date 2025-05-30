@@ -268,6 +268,7 @@ func download(id: String, artist: String, title: String, album: String, completi
     let urlString = "https://music.163.com/api/song/lyric"
     let parameters = ["tv": "-1", "lv": "-1", "kv": "-1", "id": id]
     
+    print(id)
     // Construct the URL for the lyric API with the given parameters.
     var urlComponents = URLComponents(string: urlString)
     urlComponents?.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
@@ -298,8 +299,11 @@ func download(id: String, artist: String, title: String, album: String, completi
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
             
             // Extract lyric data from the JSON response.
-            if let lrc = json?["lrc"] as? [String: Any], let lrcText = lrc["lyric"] as? String,
-               let tlyric = json?["tlyric"] as? [String: Any], let tlyricText = tlyric["lyric"] as? String {
+            if let lrc = json?["lrc"] as? [String: Any], 
+                let version = lrc["version"] as? Int,
+            let lrcText = lrc["lyric"] as? String,
+            let tlyric = json?["tlyric"] as? [String: Any],
+            let tlyricText = tlyric["lyric"] as? String {
                 
                 // Parse lyric text into LyricItem objects.
                 let lrcItems = parseLyric(lrcText)
@@ -335,9 +339,11 @@ func download(id: String, artist: String, title: String, album: String, completi
                     idTags += "[by:\(lyricUserNickname)]\n"
                 }
                 
-                if  let transUser = json?["transUser"] as? [String: Any], let transUserNickname = transUser["nickname"] as? String {
+                if let transUser = json?["transUser"] as? [String: Any], let transUserNickname = transUser["nickname"] as? String {
                     idTags += "[trans:\(transUserNickname)]\n"
                 }
+                
+                idTags += "[version:\(version)]\n"
                 
                 // Insert ID tags at the beginning of combinedLyrics.
                 combinedLyrics = idTags + combinedLyrics
