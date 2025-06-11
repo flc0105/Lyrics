@@ -246,11 +246,13 @@ func handleNowPlayingApplicationPlaybackStateDidChange(notification: Notificatio
 /// Register for notifications related to system playback state and application lifecycle.
 func registerNotifications() {
     
+    LogManager.shared.log("Registering notifications")
+    
     // Bundle Identifier of the application to be monitored
     let targetAppBundleIdentifier = getPlayerNameConfig()
     
     if targetAppBundleIdentifier.isEmpty {
-        debugPrint("No app bundle identifier set.")
+        LogManager.shared.log("No app bundle identifier set.", level: .error)
         return
     }
     
@@ -278,7 +280,7 @@ func registerNotifications() {
             if app.bundleIdentifier == targetAppBundleIdentifier {
                 // Register Now Playing notifications
                 MRMediaRemoteRegisterForNowPlayingNotifications(DispatchQueue.main)
-                debugPrint("MediaRemote now playing notifications registered.")
+                LogManager.shared.log("MediaRemote now playing notifications registered.")
             }
         }
     }
@@ -291,18 +293,18 @@ func registerNotifications() {
             if app.bundleIdentifier == targetAppBundleIdentifier {
                 // Unregister Now Playing notifications
                 MRMediaRemoteUnregisterForNowPlayingNotifications(DispatchQueue.main)
-                debugPrint("MediaRemote now playing notifications unregistered.")
+                LogManager.shared.log("MediaRemote now playing notifications unregistered.")
             }
         }
     }
     
     // Check if the application is already running at startup
     if let targetApp = NSRunningApplication.runningApplications(withBundleIdentifier: targetAppBundleIdentifier).first {
-        debugPrint("Application is running: \(targetApp.localizedName ?? "").")
+        LogManager.shared.log("Application is running: \(targetApp.localizedName ?? "").")
         
         // Register Now Playing notifications
         MRMediaRemoteRegisterForNowPlayingNotifications(DispatchQueue.main)
-        debugPrint("MediaRemote now playing notifications registered.")
+        LogManager.shared.log("MediaRemote now playing notifications registered.")
         
         // Check the current playback state at startup
         getPlaybackState { isPlaying in
@@ -311,7 +313,7 @@ func registerNotifications() {
             }
         }
     } else {
-        debugPrint("Application is not running.")
+        LogManager.shared.log("Application is not running.", level: .error)
     }
 }
 
@@ -448,4 +450,14 @@ func getTrackInformation(completion: @escaping ([String: Any]) -> Void) {
         // Call the completion handler with the updated dictionary
         completion(nowPlayingInfo)
     }
+}
+
+func getCurrentSongDuration(completion: @escaping (TimeInterval?) -> Void) {
+    MRMediaRemoteGetNowPlayingInfo(DispatchQueue.main, { (info) in
+        if let duration = info["kMRMediaRemoteNowPlayingInfoDuration"] as? NSNumber {
+            completion(duration.doubleValue)
+        } else {
+            completion(nil)
+        }
+    })
 }

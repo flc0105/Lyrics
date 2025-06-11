@@ -30,6 +30,10 @@ class UIPreferences: ObservableObject {
     
     @Published var willAutoCreateArtistDirectory: Bool = autoCreateArtistDirectory()
     
+    @Published var willAutoDownloadLyric: Bool = autoDownloadLyric()
+    
+    @Published var willAutoCheckUpdateForLyrics: Bool = autoCheckUpdateForLyrics()
+    
     /// A boolean indicating whether the window is sticky.
     @Published var isWindowSticky: Bool = false
     
@@ -385,6 +389,22 @@ func handleToggleAutoCreateArtistDirectory(isEnabled: Bool) {
     UserDefaults.standard.set(UIPreferences.shared.willAutoCreateArtistDirectory, forKey: "autoCreateArtistDirectory")
 }
 
+func handleToggleAutoDownloadLyric(isEnabled: Bool) {
+    UIPreferences.shared.willAutoDownloadLyric = isEnabled
+    debugPrint("willAutoDownloadLyric=\(UIPreferences.shared.willAutoDownloadLyric)")
+    UserDefaults.standard.set(UIPreferences.shared.willAutoDownloadLyric, forKey: "autoDownloadLyric")
+}
+
+
+func handleToggleAutoCheckUpdateForLyircs(isEnabled: Bool) {
+    UIPreferences.shared.willAutoCheckUpdateForLyrics = isEnabled
+    debugPrint("willAutoCheckUpdateForLyrics=\(UIPreferences.shared.willAutoCheckUpdateForLyrics)")
+    UserDefaults.standard.set(UIPreferences.shared.willAutoCheckUpdateForLyrics, forKey: "autoCheckUpdateForLyrics")
+}
+
+
+
+
 func handleActivateApp() {
     // 如果窗口最小化，先将窗口还原
     if let window = NSApp.windows.first {
@@ -459,6 +479,22 @@ struct LyricsApp: App {
                     },
                     set: { isEnabled in
                         handleToggleAutoCreateArtistDirectory(isEnabled: isEnabled)
+                    }
+                ))
+                Toggle("Auto Download Lyric", isOn: Binding<Bool>(
+                    get: {
+                        return uiPreferences.willAutoDownloadLyric
+                    },
+                    set: { isEnabled in
+                        handleToggleAutoDownloadLyric(isEnabled: isEnabled)
+                    }
+                ))
+                Toggle("Auto Check Update For Lyrics", isOn: Binding<Bool>(
+                    get: {
+                        return uiPreferences.willAutoCheckUpdateForLyrics
+                    },
+                    set: { isEnabled in
+                        handleToggleAutoCheckUpdateForLyircs(isEnabled: isEnabled)
                     }
                 ))
             }

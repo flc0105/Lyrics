@@ -14,6 +14,7 @@
 		6C1C371E2B3151E20040A77D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C1C371D2B3151E20040A77D /* Assets.xcassets */; };
 		6C1C37212B3151E20040A77D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C1C37202B3151E20040A77D /* Preview Assets.xcassets */; };
 		6C1C37292B3152DB0040A77D /* MediaRemoteHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1C37282B3152DB0040A77D /* MediaRemoteHelpers.swift */; };
+		6C356DC62DF92C050097C082 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C356DC52DF92C050097C082 /* LogManager.swift */; };
 		6C365EE32B3BBF0C003193F2 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 6C365EE22B3BBF0C003193F2 /* HotKey */; };
 		6C8AB7B82B3E563100521083 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 6C8AB7B72B3E563100521083 /* AlertToast */; };
 		6C8AB7BB2B3E8C1600521083 /* Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 6C8AB7BA2B3E8C1600521083 /* Dynamic */; };
@@ -30,6 +31,7 @@
 		6C1C37202B3151E20040A77D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		6C1C37222B3151E20040A77D /* Lyrics.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Lyrics.entitlements; sourceTree = "<group>"; };
 		6C1C37282B3152DB0040A77D /* MediaRemoteHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRemoteHelpers.swift; sourceTree = "<group>"; };
+		6C356DC52DF92C050097C082 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		6C96D6162B396F8F00C0CD1F /* LyricsSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsSearchView.swift; sourceTree = "<group>"; };
 		6CE0A4622B4D15AF00D6C4D0 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		6CF839DB2B4C0BEA00225B47 /* MRContentItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MRContentItem.h; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 				6C021A382B3D184A00917D2C /* LyricsView.swift */,
 				6CF839DB2B4C0BEA00225B47 /* MRContentItem.h */,
 				6CE0A4622B4D15AF00D6C4D0 /* BridgingHeader.h */,
+				6C356DC52DF92C050097C082 /* LogManager.swift */,
 			);
 			path = Lyrics;
 			sourceTree = "<group>";
@@ -174,6 +177,7 @@
 				6C1C37292B3152DB0040A77D /* MediaRemoteHelpers.swift in Sources */,
 				6C021A372B3D16DE00917D2C /* LyricsParser.swift in Sources */,
 				6C021A392B3D184A00917D2C /* LyricsView.swift in Sources */,
+				6C356DC62DF92C050097C082 /* LogManager.swift in Sources */,
 				6C96D6172B396F8F00C0CD1F /* LyricsSearchView.swift in Sources */,
 				6C1C371A2B3151E10040A77D /* LyricsApp.swift in Sources */,
 				6C021A352B3D099400917D2C /* Utilities.swift in Sources */,

@@ -327,6 +327,16 @@ func autoCreateArtistDirectory() -> Bool {
     return UserDefaults.standard.bool(forKey: "autoCreateArtistDirectory")
 }
 
+func autoDownloadLyric() -> Bool {
+    UserDefaults.standard.register(defaults: ["autoDownloadLyric": true])
+    return UserDefaults.standard.bool(forKey: "autoDownloadLyric")
+}
+
+func autoCheckUpdateForLyrics() -> Bool {
+    UserDefaults.standard.register(defaults: ["autoCheckUpdateForLyrics": true])
+    return UserDefaults.standard.bool(forKey: "autoCheckUpdateForLyrics")
+}
+
 
 
 /// Secure a file name by replacing illegal characters with underscores.

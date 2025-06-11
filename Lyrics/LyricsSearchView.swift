@@ -332,7 +332,7 @@ func download(id: String, artist: String, title: String, album: String, completi
                 // Generate a string representation of the processed lyric items.
                 var combinedLyrics = processedItems.map { "[\(timeIntervalToLyricsTimestamp($0.timestamp))]\($0.content.trimmingCharacters(in: .whitespacesAndNewlines))" }.joined(separator: "\n")
                 
-                var idTags = "[ar:\(artist)]\n[ti:\(title)]\n[al:\(album)]\n"
+                var idTags = "[ar:\(artist)]\n[ti:\(title)]\n[al:\(album)]\n" //这里存储到LRC中的曲目信息来源于歌词
                 
                 // Check if the lyricUser and transUser information is available.
                 if let lyricUser = json?["lyricUser"] as? [String: Any], let lyricUserNickname = lyricUser["nickname"] as? String {
@@ -343,7 +343,7 @@ func download(id: String, artist: String, title: String, album: String, completi
                     idTags += "[trans:\(transUserNickname)]\n"
                 }
                 
-                idTags += "[version:\(version)]\n"
+                idTags += "[song_id:\(id)]\n[version:\(version)]\n"
                 
                 // Insert ID tags at the beginning of combinedLyrics.
                 combinedLyrics = idTags + combinedLyrics
@@ -362,6 +362,67 @@ func download(id: String, artist: String, title: String, album: String, completi
     // Start the data task.
     task.resume()
 }
+
+
+
+
+func checkUpdate(id: String, completion: @escaping (Int?) -> Void) {
+    let urlString = "https://music.163.com/api/song/lyric"
+    let parameters = ["tv": "-1", "lv": "-1", "kv": "-1", "id": id]
+    
+ 
+    // Construct the URL for the lyric API with the given parameters.
+    var urlComponents = URLComponents(string: urlString)
+    urlComponents?.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+    guard let url = urlComponents?.url else {
+        debugPrint("Invalid URL")
+        completion(nil)
+        return
+    }
+    
+    // Perform a data task to download lyric data from the API.
+    let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+        // Handle any error that occurred during the data task.
+        if let error = error {
+            debugPrint("Error: \(error)")
+            completion(nil)
+            return
+        }
+        
+        do {
+            // Ensure that data was received.
+            guard let data = data else {
+                debugPrint("No data received")
+                completion(nil)
+                return
+            }
+            
+            // Attempt to parse the received JSON data.
+            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            
+            // Extract lyric data from the JSON response.
+            if let lrc = json?["lrc"] as? [String: Any],
+                let version = lrc["version"] as? Int {
+                completion(version)
+            } else {
+                debugPrint("Failed to parse version number from JSON")
+                completion(nil)
+            }
+        } catch {
+            debugPrint("Error parsing JSON: \(error)")
+            completion(nil)
+        }
+    }
+    // Start the data task.
+    task.resume()
+}
+
+
+
+
+
+
+
 
 
 /// Parses the lyric text and returns an array of lyric items.
