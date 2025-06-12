@@ -289,13 +289,13 @@ func startLyrics() {
     getNowPlayingInfo { nowPlayingInfo in
         // Check if the now playing information is empty
         guard !nowPlayingInfo.isEmpty else {
-            debugPrint("Now playing information is empty.")
+            LogManager.shared.log("Now playing information is empty.", level: .error)
             return
         }
         
         // Get playback time
         guard let playbackTime = nowPlayingInfo["ElapsedTime"] as? TimeInterval else {
-            debugPrint("Failed to get playback time.")
+            LogManager.shared.log("Failed to get playback time.", level: .error)
             return
         }
         
@@ -303,13 +303,14 @@ func startLyrics() {
         // Extract artist and title
         let artist = nowPlayingInfo["Artist"] as? String ?? ""
         let title = nowPlayingInfo["Title"] as? String ?? ""
+        LogManager.shared.log("Currently playing: \(artist) - \(title)")
         
         // Get the path of the lyrics file
         let lrcPath = getLyricsPath(artist: artist, title: title)
         
         // Try to read the contents of the lyrics file
         if let lrcContent = try? String(contentsOfFile: lrcPath) {
-            debugPrint("Lyrics file loaded: \(lrcPath)")
+            LogManager.shared.log("Lyrics file loaded: \(lrcPath)")
             
             // Reset the stopped flag
             isStopped = false
@@ -330,7 +331,7 @@ func startLyrics() {
                 let lyricStartTime = Date().timeIntervalSinceReferenceDate
                 getNowPlayingInfo { nowPlayingInfo in
                     guard var updatedPlaybackTime = nowPlayingInfo["ElapsedTime"] as? TimeInterval else {
-                        debugPrint("Failed to update playback time.")
+                        LogManager.shared.log("Failed to update playback time.", level: .error)
                         return
                     }
                     
@@ -338,136 +339,99 @@ func startLyrics() {
                     let gap = Date().timeIntervalSinceReferenceDate - lyricStartTime
                     updatedPlaybackTime = updatedPlaybackTime + gap
                     updatePlaybackTime(playbackTime: updatedPlaybackTime)
-                    debugPrint("Playback time updated: \(updatedPlaybackTime)")
+                    LogManager.shared.log("Playback time updated: \(updatedPlaybackTime)", level: .debug)
                 }
             }
             
-            
-            // 检测歌词版本更新
-            if (UIPreferences.shared.willAutoCheckUpdateForLyrics) {
-                debugPrint("Checking update for lyrics...")
-                
-                var songID: Int?
-                var version: Int?
-                
-                // 按行分割 LRC 内容
-                let lines = lrcContent.components(separatedBy: .newlines)
-                
-                for line in lines {
-                    // 检查是否是元数据行（格式如 [key:value]）
-                    if line.hasPrefix("[") && line.contains(":") && line.hasSuffix("]") {
-                        // 去掉方括号
-                        let content = line.dropFirst().dropLast()
-                        // 分割键值对
-                        let parts = content.components(separatedBy: ":")
-                        
-                        guard parts.count == 2 else { continue }
-                        
-                        let key = parts[0]
-                        let value = parts[1]
-                        
-                        // 提取 song_id
-                        if key == "song_id", let id = Int(value) {
-                            songID = id
-                        }
-                        // 提取 version
-                        else if key == "version", let ver = Int(value) {
-                            version = ver
-                        }
-                    }
-                }
-                
-                if let songID = songID {
-                    debugPrint("提取到 song_id: \(songID)")
-                } else {
-                    debugPrint("未找到 song_id")
-                }
-                
-                if let version = version {
-                    debugPrint("提取到 version: \(version)")
-                } else {
-                    debugPrint("未找到 version")
-                }
-                
-                checkUpdate(id: String(songID!)) { newVersion in
-                    guard let newVersion = newVersion else {
-                        debugPrint("Failed to get version for song \(songID).")
-                        return
-                    }
-                    
-                    if newVersion > version! {
-                        debugPrint("检测到版本更新，当前已下载版本：\(version!)，新版本：\(newVersion)")
-                        
-                        // Download lyrics and display an alert.
-                        download(id: String(songID!), artist: artist, title: title, album: "album") { combinedLyrics in
-                            if let combinedLyrics = combinedLyrics {
-                                // Ensure that UI-related code is executed on the main thread
-                                DispatchQueue.main.async {
-                                    showTextAreaAlert(title: "Save Lyrics", message: "检测到版本更新，当前已下载版本：\(version!)，新版本：\(newVersion)，是否下载？", defaultValue: combinedLyrics, firstButtonText: "Download") { text in
-                                        saveLyricsToFile(lyrics: text, artist: artist, title: title)
-                                        // Lyrics load immediately after saving.
-                                        
-                                        // Check playback state
-                                        getPlaybackState { isPlaying in
-                                            if isPlaying {
-                                                // Stop displaying lyrics
-                                                stopLyrics()
-                                                
-                                                // Start displaying lyrics
-                                                startLyrics()
-                                                
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                DispatchQueue.main.async {
-                                    showAlert(title: "Save Lyrics", message: "Failed to fetch lyrics.")
-                                }
-                            }
-                        }
-                        
-                        
-                    } else {
-                        debugPrint("当前歌词版本已经是最新，当前已下载版本：\(version!)，新版本：\(newVersion)")
-                    }
-                }
-                
-            }
-            
+            checkForLyricsUpdate(lrcContent: lrcContent, artist: artist, title: title)
             
         } else {
-            debugPrint("Failed to read LRC file.")
+            LogManager.shared.log("Failed to read LRC file.", level: .error)
             initializeLyrics(withDefault:[
                 LyricInfo(id: 0, text: "\(artist) - \(title)", isCurrent: true, playbackTime: 0, isTranslation: false),
                 LyricInfo(id: 1, text: "Lyrics not found.", isCurrent: false, playbackTime: 1, isTranslation: false)])
             
+            fetchLyricsOnline(artist: artist, title: title, playbackTime: playbackTime)
+
+        }
+    }
+}
+
+
+func fetchLyricsOnline(artist: String, title: String, playbackTime: TimeInterval) {
+    LogManager.shared.log("willAutoDownloadLyric=\(UIPreferences.shared.willAutoDownloadLyric)")
+    guard UIPreferences.shared.willAutoDownloadLyric else { return }
+    LogManager.shared.log("Attempting to fetch lyrics online.")
+    
+    getCurrentSongDuration { currentSongDuration in
+        guard let currentSongDuration = currentSongDuration else {
+            LogManager.shared.log("Failed to get current song duration.", level: .error)
+            return
+        }
+        
+        searchSong(keyword: "\(artist) - \(title)") { result, error in
+            guard let result = result, error == nil else {
+                LogManager.shared.log("No suitable results found or error occurred: \(error?.localizedDescription ?? "Unknown error")", level: .error)
+                return
+            }
             
-            //没有歌词的话自动下载
-            if (UIPreferences.shared.willAutoDownloadLyric) {
-                debugPrint("willAutoDownloadLyric=true")
-                getCurrentSongDuration { currentSongDuration in
-                    guard let currentSongDuration = currentSongDuration else {
-                        debugPrint("Failed to get current song duration.")
-                        return
-                    }
-                    
-                    debugPrint("Failed to read LRC file, attempting to fetch lyrics online.")
-                    
-                    searchSong(keyword: "\(artist) - \(title)") { result, error in
-                        
-                        
-                        guard let result = result, error == nil else {
-                            debugPrint("No suitable results found or error occurred: \(error?.localizedDescription ?? "Unknown error")")
-                            return
-                        }
-                        
-                        // 过滤掉与当前播放歌曲时长差异大于3秒的歌曲
-                        let filteredSongs = result.songs.filter { abs(Double($0.duration)/1000 - currentSongDuration) <= 3 }
-                        debugPrint("Filtered songs: \(filteredSongs)")
-                        
-                        //尝试从过滤后的歌曲中下载歌词
-                        attemptToDownloadLyricsFromSongs(songs: filteredSongs, index: 0, playbackTime: playbackTime, artist: artist, title: title)
+            // 过滤掉与当前播放歌曲时长差异大于3秒的歌曲
+            let filteredSongs = result.songs.filter { abs(Double($0.duration)/1000 - currentSongDuration) <= 3 }
+            LogManager.shared.log("Filtered songs: \(filteredSongs)")
+            
+            //尝试从过滤后的歌曲中下载歌词
+            attemptToDownloadLyricsFromSongs(songs: filteredSongs, index: 0, playbackTime: playbackTime, artist: artist, title: title)
+        }
+        
+    }
+}
+
+
+func checkForLyricsUpdate(lrcContent: String, artist: String, title: String) {
+    LogManager.shared.log("willAutoCheckForLyricsUpdate=\(UIPreferences.shared.willAutoCheckForLyricsUpdate)")
+    guard UIPreferences.shared.willAutoCheckForLyricsUpdate else { return }
+    
+    LogManager.shared.log("Checking for lyrics update")
+    
+    // Parse metadata from LRC content
+    let (songID, version) = parseLRCMetadata(lrcContent)
+    LogManager.shared.log("songID=\(String(describing: songID)), version=\(String(describing: version))")
+    
+    
+    guard let songID = songID, let version = version else {
+        LogManager.shared.log("Missing required metadata: songID: \(songID != nil), version: \(version != nil)",
+                              level: .error)
+        return
+    }
+    
+    checkUpdate(id: String(songID)) { newVersion in
+        
+        guard let newVersion = newVersion else {
+            LogManager.shared.log("Failed to get lyrics version for song \(songID) online", level: .error)
+            return
+        }
+        
+        guard newVersion > version else {
+            LogManager.shared.log("Lyrics up to date. Current: \(version), Online: \(newVersion)")
+            return
+        }
+        
+        LogManager.shared.log("Update available. Current: \(version), New: \(newVersion)")
+        
+        // Download lyrics and display an alert.
+        download(id: String(songID), artist: artist, title: title, album: "album") { combinedLyrics in
+            if let combinedLyrics = combinedLyrics {
+                // Ensure that UI-related code is executed on the main thread
+                DispatchQueue.main.async {
+                    showTextAreaAlert(
+                        title: "Save Lyrics",
+                        message: "Update available (v\(version) → v\(newVersion)). Download?",
+                        defaultValue: combinedLyrics,
+                        firstButtonText: "Download" )
+                        { text in
+                        saveLyricsToFile(lyrics: text, artist: artist, title: title)
+                        // Lyrics load immediately after saving.
+                        refreshLyricsDisplayIfPlaying()
                     }
                 }
             }
@@ -476,24 +440,55 @@ func startLyrics() {
 }
 
 
+private func refreshLyricsDisplayIfPlaying() {
+    getPlaybackState { isPlaying in
+        guard isPlaying else { return }
+        stopLyrics()
+        startLyrics()
+    }
+}
+
+private func parseLRCMetadata(_ lrcContent: String) -> (songID: Int?, version: Int?) {
+    var songID: Int?
+    var version: Int?
+    
+    for line in lrcContent.components(separatedBy: .newlines) {
+        guard line.hasPrefix("["), line.contains(":"), line.hasSuffix("]") else { continue }
+        
+        let content = line.dropFirst().dropLast()
+        let parts = content.components(separatedBy: ":")
+        guard parts.count == 2 else { continue }
+        
+        let key = parts[0]
+        let value = parts[1]
+        
+        switch key {
+        case "song_id": songID = Int(value)
+        case "version": version = Int(value)
+        default: continue
+        }
+    }
+    
+    return (songID, version)
+}
+
+
 
 private func attemptToDownloadLyricsFromSongs(songs: [Song], index: Int, playbackTime: TimeInterval, artist: String, title: String) {
     if index >= songs.count {
-        debugPrint("Attempted all songs but failed to download lyrics.")
-        // 所有下载尝试失败后，显示默认歌词
-        initializeLyrics(withDefault: [
-            LyricInfo(id: 0, text: "\(artist) - \(title)", isCurrent: true, playbackTime: 0, isTranslation: false)
-        ])
+        LogManager.shared.log("Attempted all songs but failed to download lyrics.", level: .error)
         return
     }
     
     let song = songs[index]
     download(id: String(song.id), artist: song.artists.first?.name ?? "", title: song.name, album: song.album.name) { lyricsContent in
         guard let lyricsContent = lyricsContent else {
-            debugPrint("Failed to download lyrics for song \(song.name). Trying next song.")
+            LogManager.shared.log("Failed to download lyrics for song \(song.name). Trying next song.", level: .error)
             attemptToDownloadLyricsFromSongs(songs: songs, index: index + 1, playbackTime: playbackTime, artist: artist, title: title)
             return
         }
+        
+        LogManager.shared.log("songID:\(song.id), title:\(song.name), artist:\(song.artists), album:\(song.album.name), duration:\(song.duration)")
         
         DispatchQueue.main.async {
             isStopped = false

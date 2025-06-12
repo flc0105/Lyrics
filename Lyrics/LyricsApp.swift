@@ -32,7 +32,7 @@ class UIPreferences: ObservableObject {
     
     @Published var willAutoDownloadLyric: Bool = autoDownloadLyric()
     
-    @Published var willAutoCheckUpdateForLyrics: Bool = autoCheckUpdateForLyrics()
+    @Published var willAutoCheckForLyricsUpdate: Bool = autoCheckForLyricsUpdate()
     
     /// A boolean indicating whether the window is sticky.
     @Published var isWindowSticky: Bool = false
@@ -396,10 +396,10 @@ func handleToggleAutoDownloadLyric(isEnabled: Bool) {
 }
 
 
-func handleToggleAutoCheckUpdateForLyircs(isEnabled: Bool) {
-    UIPreferences.shared.willAutoCheckUpdateForLyrics = isEnabled
-    debugPrint("willAutoCheckUpdateForLyrics=\(UIPreferences.shared.willAutoCheckUpdateForLyrics)")
-    UserDefaults.standard.set(UIPreferences.shared.willAutoCheckUpdateForLyrics, forKey: "autoCheckUpdateForLyrics")
+func handleToggleAutoCheckForLyircsUpdate(isEnabled: Bool) {
+    UIPreferences.shared.willAutoCheckForLyricsUpdate = isEnabled
+    debugPrint("willAutoCheckForLyricsUpdate=\(UIPreferences.shared.willAutoCheckForLyricsUpdate)")
+    UserDefaults.standard.set(UIPreferences.shared.willAutoCheckForLyricsUpdate, forKey: "autoCheckForLyricsUpdate")
 }
 
 
@@ -489,12 +489,12 @@ struct LyricsApp: App {
                         handleToggleAutoDownloadLyric(isEnabled: isEnabled)
                     }
                 ))
-                Toggle("Auto Check Update For Lyrics", isOn: Binding<Bool>(
+                Toggle("Auto Check For Lyrics Update", isOn: Binding<Bool>(
                     get: {
-                        return uiPreferences.willAutoCheckUpdateForLyrics
+                        return uiPreferences.willAutoCheckForLyricsUpdate
                     },
                     set: { isEnabled in
-                        handleToggleAutoCheckUpdateForLyircs(isEnabled: isEnabled)
+                        handleToggleAutoCheckForLyircsUpdate(isEnabled: isEnabled)
                     }
                 ))
             }

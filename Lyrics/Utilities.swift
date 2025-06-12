@@ -332,9 +332,9 @@ func autoDownloadLyric() -> Bool {
     return UserDefaults.standard.bool(forKey: "autoDownloadLyric")
 }
 
-func autoCheckUpdateForLyrics() -> Bool {
-    UserDefaults.standard.register(defaults: ["autoCheckUpdateForLyrics": true])
-    return UserDefaults.standard.bool(forKey: "autoCheckUpdateForLyrics")
+func autoCheckForLyricsUpdate() -> Bool {
+    UserDefaults.standard.register(defaults: ["autoCheckForLyricsUpdate": true])
+    return UserDefaults.standard.bool(forKey: "autoCheckForLyricsUpdate")
 }
 
 
@@ -404,8 +404,8 @@ func getCurrentTrackLyricsPath() -> String {
 //    }
 //}
 func saveLyricsToFile(lyrics: String, artist: String, title: String) {
-    var artistToUse = currentTrackArtist ?? artist
-    var titleToUse = currentTrackTitle ?? title
+    let artistToUse = currentTrackArtist ?? artist
+    let titleToUse = currentTrackTitle ?? title
     let fileName = "\(artistToUse) - \(titleToUse).lrc"
 
     let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: artistToUse))/" : ""
@@ -418,12 +418,12 @@ func saveLyricsToFile(lyrics: String, artist: String, title: String) {
 
         let filePath = artistFolderPath + secureFileName(fileName: fileName)
         try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
-        debugPrint("Lyrics saved to: \(filePath)")
+        LogManager.shared.log("Lyrics saved to: \(filePath)")
     } catch {
         DispatchQueue.main.async {
             showAlert(title: "Save lyrics", message: "Error saving lyrics to file: \(error)")
         }
-        debugPrint("Error saving lyrics to file: \(error)")
+        LogManager.shared.log("Error saving lyrics to file: \(error)", level: .error)
     }
 }
 
