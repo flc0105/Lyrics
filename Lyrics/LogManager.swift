@@ -22,7 +22,7 @@ class LogManager {
         // 初始化日志文件路径
         
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        logFileURL = documentsDirectory.appendingPathComponent("app_log.txt")
+        logFileURL = documentsDirectory.appendingPathComponent("lyrics.log")
         
         // 创建日志文件（如果不存在）
         if !FileManager.default.fileExists(atPath: logFileURL.path) {
@@ -46,7 +46,7 @@ class LogManager {
     // 核心日志方法
     func log(_ message: String, level: OSLogType = .default) {
         
-        os_log("%@", log: OSLog.default, type: level, message)
+//        os_log("%@", log: OSLog.default, type: level, message)
         
         // 1. 生成日志级别标记
         let levelString: String

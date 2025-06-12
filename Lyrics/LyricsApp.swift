@@ -27,10 +27,8 @@ class UIPreferences: ObservableObject {
     
     /// A boolean indicating whether the playback progress is visible.
     @Published var isPlaybackProgressVisible: Bool = isPlaybackProgressVisibleConfig()
-    
-    @Published var willAutoCreateArtistDirectory: Bool = autoCreateArtistDirectory()
-    
-    @Published var willAutoDownloadLyric: Bool = autoDownloadLyric()
+        
+    @Published var willAutoDownloadLyrics: Bool = autoDownloadLyrics()
     
     @Published var willAutoCheckForLyricsUpdate: Bool = autoCheckForLyricsUpdate()
     
@@ -138,7 +136,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             window.level = (window.level == .floating) ? .normal : .floating
             UIPreferences.shared.isWindowSticky = (window.level == .floating)
         } else {
-            debugPrint("Window topping failure.")
+            LogManager.shared.log("Window topping failure.", level: .error)
         }
     }
     
@@ -236,7 +234,7 @@ func handleRecalibration() {
         }
         
         
-
+        
     }
     
     
@@ -257,9 +255,9 @@ func handleRecalibration() {
             showRegularToast("Not playing.")
         }
     }
-
     
-
+    
+    
 }
 
 /// Handles manual input for calibration.
@@ -355,7 +353,7 @@ func handleToggleSticky(isEnabled: Bool) {
     NSApp.activate(ignoringOtherApps: true)
     UIPreferences.shared.isWindowSticky = isEnabled
     NSApp.sendAction(#selector(AppDelegate.toggleWindowSticky(_:)), to: nil, from: nil)
-    debugPrint("isWindowSticky=\(UIPreferences.shared.isWindowSticky)")
+    LogManager.shared.log("Setting changed: isWindowSticky=\(UIPreferences.shared.isWindowSticky)")
     
     // Show a Toast notification
     let toastMessage = UIPreferences.shared.isWindowSticky ? "Window is now sticky." : "Window is no longer sticky."
@@ -366,7 +364,7 @@ func handleToggleSticky(isEnabled: Bool) {
 /// Handles toggling show album cover.
 func handleToggleShowAlbumCover(isEnabled: Bool) {
     UIPreferences.shared.isCoverImageVisible = isEnabled
-    debugPrint("isCoverImageVisible=\(UIPreferences.shared.isCoverImageVisible)")
+    LogManager.shared.log("Setting changed: isCoverImageVisible=\(UIPreferences.shared.isCoverImageVisible)")
     if (!UIPreferences.shared.isCoverImageVisible) {
         UIPreferences.shared.coverImage = nil
         UserDefaults.standard.set(false, forKey: "IsCoverImageVisible")
@@ -379,30 +377,23 @@ func handleToggleShowAlbumCover(isEnabled: Bool) {
 /// Handles toggling show playback progress.
 func handleToggleShowPlaybackProgress(isEnabled: Bool) {
     UIPreferences.shared.isPlaybackProgressVisible = isEnabled
-    debugPrint("isPlaybackProgressVisible=\(UIPreferences.shared.isPlaybackProgressVisible)")
+    LogManager.shared.log("Setting changed: isPlaybackProgressVisible=\(UIPreferences.shared.isPlaybackProgressVisible)")
     UserDefaults.standard.set(UIPreferences.shared.isPlaybackProgressVisible, forKey: "IsPlaybackProgressVisible")
 }
 
-func handleToggleAutoCreateArtistDirectory(isEnabled: Bool) {
-    UIPreferences.shared.willAutoCreateArtistDirectory = isEnabled
-    debugPrint("willAutoCreateArtistDirectory=\(UIPreferences.shared.willAutoCreateArtistDirectory)")
-    UserDefaults.standard.set(UIPreferences.shared.willAutoCreateArtistDirectory, forKey: "autoCreateArtistDirectory")
-}
 
 func handleToggleAutoDownloadLyric(isEnabled: Bool) {
-    UIPreferences.shared.willAutoDownloadLyric = isEnabled
-    debugPrint("willAutoDownloadLyric=\(UIPreferences.shared.willAutoDownloadLyric)")
-    UserDefaults.standard.set(UIPreferences.shared.willAutoDownloadLyric, forKey: "autoDownloadLyric")
+    UIPreferences.shared.willAutoDownloadLyrics = isEnabled
+    LogManager.shared.log("Setting changed: willAutoDownloadLyrics=\(UIPreferences.shared.willAutoDownloadLyrics)")
+    UserDefaults.standard.set(UIPreferences.shared.willAutoDownloadLyrics, forKey: "autoDownloadLyrics")
 }
 
 
 func handleToggleAutoCheckForLyircsUpdate(isEnabled: Bool) {
     UIPreferences.shared.willAutoCheckForLyricsUpdate = isEnabled
-    debugPrint("willAutoCheckForLyricsUpdate=\(UIPreferences.shared.willAutoCheckForLyricsUpdate)")
+    LogManager.shared.log("Setting changed: willAutoCheckForLyricsUpdate=\(UIPreferences.shared.willAutoCheckForLyricsUpdate)")
     UserDefaults.standard.set(UIPreferences.shared.willAutoCheckForLyricsUpdate, forKey: "autoCheckForLyricsUpdate")
 }
-
-
 
 
 func handleActivateApp() {
@@ -424,7 +415,6 @@ struct LyricsApp: App {
     
     // Define a hotkey for the application
     let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: handleActivateApp)
-    //    let hotKey = HotKey(key: .l, modifiers: [.control], keyDownHandler: {NSApp.activate(ignoringOtherApps: true)})
     
     // The app delegate for managing the application's lifecycle.
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -473,17 +463,9 @@ struct LyricsApp: App {
                 Button("Configure Player") { handleConfigurePlayer() }
                 Button("Configure Lyrics Folder") { handleConfigureLyricsFolder() }
                 Button("Configure Global Offset") { handleConfigureGlobalOffset() }
-                Toggle("Auto Create Artist Directory", isOn: Binding<Bool>(
+                Toggle("Auto Download Lyrics", isOn: Binding<Bool>(
                     get: {
-                        return uiPreferences.willAutoCreateArtistDirectory
-                    },
-                    set: { isEnabled in
-                        handleToggleAutoCreateArtistDirectory(isEnabled: isEnabled)
-                    }
-                ))
-                Toggle("Auto Download Lyric", isOn: Binding<Bool>(
-                    get: {
-                        return uiPreferences.willAutoDownloadLyric
+                        return uiPreferences.willAutoDownloadLyrics
                     },
                     set: { isEnabled in
                         handleToggleAutoDownloadLyric(isEnabled: isEnabled)

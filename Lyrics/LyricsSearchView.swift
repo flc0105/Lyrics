@@ -87,7 +87,7 @@ struct LyricsSearchView: View {
                 // Action when a row is double-clicked.
                 if let selectedItem = searchResults.first(where: { $0.id == selectedItemId }) {
                     let id = selectedItem.id
-                    debugPrint("Preparing to get lyrics for song ID " + id)
+                    LogManager.shared.log("Preparing to get lyrics for song ID " + id)
                     
                     // Extract the relevant information from the selected item.
                     let title = selectedItem.title
@@ -134,7 +134,7 @@ struct LyricsSearchView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { notification in
             if let window = notification.object as? NSWindow {
                 if window.title == "Search Lyrics" {
-                    print("Subwindow became key.")
+                    debugPrint("Subwindow became key.")
                     if let currentTrack = currentTrack, !currentTrack.isEmpty {
                         
                         if searchText != currentTrack {
@@ -216,18 +216,21 @@ struct LyricsSearchView: View {
 ///   - keyword: The keyword to search for.
 ///   - completion: A closure to be executed upon completion of the search, providing either a `Result` or an `Error`.
 func searchSong(keyword: String, completion: @escaping (Result?, Error?) -> Void) {
+    LogManager.shared.log("Start searching for lyrics, keyword=" + keyword)
+    
     // Ensure the keyword is properly encoded for a URL.
     guard let encodedKeyword = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-        print("Error: Unable to encode keyword")
+        LogManager.shared.log("Error: Unable to encode keyword", level: .error)
         return
     }
     
     // Construct the API URL for the search.
     let apiUrl = "https://music.163.com/api/search/get?s=\(encodedKeyword)&type=1&limit=30"
+    LogManager.shared.log("URL: " + apiUrl)
     
     // Create a URL object from the API URL string.
     guard let url = URL(string: apiUrl) else {
-        print("Invalid URL")
+        LogManager.shared.log("Invalid URL", level: .error)
         return
     }
     
@@ -235,13 +238,14 @@ func searchSong(keyword: String, completion: @escaping (Result?, Error?) -> Void
     let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
         // Handle any error that occurred during the task.
         if let error = error {
+            LogManager.shared.log("Error: \(error.localizedDescription)", level: .error)
             completion(nil, error)
             return
         }
         
         // Ensure that data was received.
         guard let data = data else {
-            print("No data received")
+            LogManager.shared.log("No data received", level: .error)
             return
         }
         
@@ -251,7 +255,7 @@ func searchSong(keyword: String, completion: @escaping (Result?, Error?) -> Void
             let searchResult = try decoder.decode(SearchResult.self, from: data)
             completion(searchResult.result, nil)
         } catch {
-            print("Error decoding JSON: \(error)")
+            LogManager.shared.log("Error decoding JSON: \(error)", level: .error)
             completion(nil, error)
         }
     }
@@ -265,24 +269,29 @@ func searchSong(keyword: String, completion: @escaping (Result?, Error?) -> Void
 ///   - id: The ID of the song for which lyrics are to be downloaded.
 ///   - completion: A closure to be called with the downloaded lyrics or `nil` if an error occurs.
 func download(id: String, artist: String, title: String, album: String, completion: @escaping (String?) -> Void) {
+    
+    LogManager.shared.log("Start downloading lyrics")
+    
     let urlString = "https://music.163.com/api/song/lyric"
     let parameters = ["tv": "-1", "lv": "-1", "kv": "-1", "id": id]
     
-    print(id)
     // Construct the URL for the lyric API with the given parameters.
     var urlComponents = URLComponents(string: urlString)
     urlComponents?.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+    
     guard let url = urlComponents?.url else {
-        debugPrint("Invalid URL")
+        LogManager.shared.log("Invalid URL", level: .error)
         completion(nil)
         return
     }
+    
+    LogManager.shared.log("URL: \(url)")
     
     // Perform a data task to download lyric data from the API.
     let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
         // Handle any error that occurred during the data task.
         if let error = error {
-            debugPrint("Error: \(error)")
+            LogManager.shared.log("Error: \(error)", level: .error)
             completion(nil)
             return
         }
@@ -290,7 +299,7 @@ func download(id: String, artist: String, title: String, album: String, completi
         do {
             // Ensure that data was received.
             guard let data = data else {
-                debugPrint("No data received")
+                LogManager.shared.log("No data received", level: .error)
                 completion(nil)
                 return
             }
@@ -351,11 +360,11 @@ func download(id: String, artist: String, title: String, album: String, completi
                 // Return the result through the completion closure.
                 completion(combinedLyrics)
             } else {
-                debugPrint("Failed to parse lyrics from JSON")
+                LogManager.shared.log("Failed to parse lyrics from JSON", level: .error)
                 completion(nil)
             }
         } catch {
-            debugPrint("Error parsing JSON: \(error)")
+            LogManager.shared.log("Error parsing JSON: \(error)", level: .error)
             completion(nil)
         }
     }
@@ -367,49 +376,45 @@ func download(id: String, artist: String, title: String, album: String, completi
 
 
 func checkUpdate(id: String, completion: @escaping (Int?) -> Void) {
+    LogManager.shared.log("Start checking for update")
+    
     let urlString = "https://music.163.com/api/song/lyric"
     let parameters = ["tv": "-1", "lv": "-1", "kv": "-1", "id": id]
     
- 
-    // Construct the URL for the lyric API with the given parameters.
-    var urlComponents = URLComponents(string: urlString)
+     var urlComponents = URLComponents(string: urlString)
     urlComponents?.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
     guard let url = urlComponents?.url else {
-        debugPrint("Invalid URL")
+        LogManager.shared.log("Invalid URL", level: .error)
         completion(nil)
         return
     }
     
-    // Perform a data task to download lyric data from the API.
     let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
         // Handle any error that occurred during the data task.
         if let error = error {
-            debugPrint("Error: \(error)")
+            LogManager.shared.log("Error: \(error)", level: .error)
             completion(nil)
             return
         }
         
         do {
-            // Ensure that data was received.
             guard let data = data else {
-                debugPrint("No data received")
+                LogManager.shared.log("No data received", level: .error)
                 completion(nil)
                 return
             }
             
-            // Attempt to parse the received JSON data.
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
             
-            // Extract lyric data from the JSON response.
             if let lrc = json?["lrc"] as? [String: Any],
                 let version = lrc["version"] as? Int {
                 completion(version)
             } else {
-                debugPrint("Failed to parse version number from JSON")
+                LogManager.shared.log("Failed to parse version number from JSON", level: .error)
                 completion(nil)
             }
         } catch {
-            debugPrint("Error parsing JSON: \(error)")
+            LogManager.shared.log("Error parsing JSON: \(error)", level: .error)
             completion(nil)
         }
     }
@@ -418,44 +423,6 @@ func checkUpdate(id: String, completion: @escaping (Int?) -> Void) {
 }
 
 
-
-
-
-
-
-
-
-/// Parses the lyric text and returns an array of lyric items.
-/// - Parameter lyricText: The raw lyric text to be parsed.
-/// - Returns: An array of `LyricItem` objects.
-//func parseLyric(_ lyricText: String) -> [LyricItem] {
-//    var lyricItems = [LyricItem]()
-//
-//    
-//    // Split the lyric text into lines.
-//    let lines = lyricText.components(separatedBy: "\n")
-//    
-//    
-//    
-//    // Iterate through each line to extract timestamp and content.
-//    for line in lines {
-//        
-//        debugPrint(line)
-//        // Use regular expression to extract timestamp and lyric content.
-//        if let match = line.range(of: "\\[(\\d+:\\d+\\.\\d+)\\]", options: .regularExpression) {
-//            let timestampString = String(line[match])
-//            let content = line.replacingOccurrences(of: "\\[(\\d+:\\d+\\.\\d+)\\]", with: "", options: .regularExpression)
-//            
-//            // Convert the timestamp to a time interval.
-//            if let timestamp = lyricsTimestampToTimeInterval(timestampString) {
-//                let lyricItem = LyricItem(timestamp: timestamp, content: content)
-//                lyricItems.append(lyricItem)
-//            }
-//        }
-//    }
-//    
-//    return lyricItems
-//}
 func parseLyric(_ lyricText: String) -> [LyricItem] {
     var lyricItems = [LyricItem]()
 

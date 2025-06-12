@@ -359,8 +359,8 @@ func startLyrics() {
 
 
 func fetchLyricsOnline(artist: String, title: String, playbackTime: TimeInterval) {
-    LogManager.shared.log("willAutoDownloadLyric=\(UIPreferences.shared.willAutoDownloadLyric)")
-    guard UIPreferences.shared.willAutoDownloadLyric else { return }
+    LogManager.shared.log("willAutoDownloadLyrics=\(UIPreferences.shared.willAutoDownloadLyrics)")
+    guard UIPreferences.shared.willAutoDownloadLyrics else { return }
     LogManager.shared.log("Attempting to fetch lyrics online.")
     
     getCurrentSongDuration { currentSongDuration in

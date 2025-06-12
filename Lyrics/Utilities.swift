@@ -327,9 +327,9 @@ func autoCreateArtistDirectory() -> Bool {
     return UserDefaults.standard.bool(forKey: "autoCreateArtistDirectory")
 }
 
-func autoDownloadLyric() -> Bool {
-    UserDefaults.standard.register(defaults: ["autoDownloadLyric": true])
-    return UserDefaults.standard.bool(forKey: "autoDownloadLyric")
+func autoDownloadLyrics() -> Bool {
+    UserDefaults.standard.register(defaults: ["autoDownloadLyrics": true])
+    return UserDefaults.standard.bool(forKey: "autoDownloadLyrics")
 }
 
 func autoCheckForLyricsUpdate() -> Bool {
@@ -355,16 +355,11 @@ func secureFileName(fileName: String) -> String {
 ///   - artist: The artist of the song.
 ///   - title: The title of the song.
 /// - Returns: The file path for the LRC file.
-//func getLyricsPath(artist: String, title: String) -> String {
-//    // Create the file name by combining artist and title
-//    let fileName = secureFileName(fileName: "\(artist) - \(title).lrc")
-//    // Construct and return the full file path
-//    return "\(getLyricsFolderPathConfig())\(fileName)"
-//}
 func getLyricsPath(artist: String, title: String) -> String {
-    let fileName = "\(artist) - \(title).lrc"
-        let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: artist))/": ""
-        return "\(getLyricsFolderPathConfig())\(artistDirectory)\(secureFileName(fileName: fileName))"
+    // Create the file name by combining artist and title
+    let fileName = secureFileName(fileName: "\(artist) - \(title).lrc")
+    // Construct and return the full file path
+    return "\(getLyricsFolderPathConfig())\(fileName)"
 }
 
 
@@ -375,16 +370,11 @@ func getLyricsPath(artist: String, title: String) -> String {
  - Returns: The file path for the LRC file.
  */
 func getCurrentTrackLyricsPath() -> String {
+    // Create the file name by using the provided track name
+    let fileName = secureFileName(fileName: "\(currentTrackArtist!) - \(currentTrackTitle!).lrc")
     
-    let fileName = "\(currentTrackArtist!) - \(currentTrackTitle!).lrc"
-        let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: currentTrackArtist!))/": ""
-        return "\(getLyricsFolderPathConfig())\(artistDirectory)\(secureFileName(fileName: fileName))"
-    
-//    // Create the file name by using the provided track name
-//    let fileName = secureFileName(fileName: "\(track).lrc")
-//    
-//    // Construct and return the full file path
-//    return "\(getLyricsFolderPathConfig())\(fileName)"
+    // Construct and return the full file path
+    return "\(getLyricsFolderPathConfig())\(fileName)"
 }
 
 
@@ -394,29 +384,9 @@ func getCurrentTrackLyricsPath() -> String {
 ///   - lyrics: The lyrics content to be saved.
 ///   - artist: The artist name for file naming.
 ///   - title: The title name for file naming.
-//func saveLyricsToFile(lyrics: String, artist: String, title: String) {
-//    let filePath = getLyricsFolderPathConfig() + secureFileName(fileName: (currentTrack ?? "\(artist) - \(title)")  + ".lrc")
-//    do {
-//        try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
-//        debugPrint("Lyrics saved to: \(filePath)")
-//    } catch {
-//        debugPrint("Error saving lyrics to file: \(error)")
-//    }
-//}
 func saveLyricsToFile(lyrics: String, artist: String, title: String) {
-    let artistToUse = currentTrackArtist ?? artist
-    let titleToUse = currentTrackTitle ?? title
-    let fileName = "\(artistToUse) - \(titleToUse).lrc"
-
-    let artistDirectory = UIPreferences.shared.willAutoCreateArtistDirectory ? "\(secureFileName(fileName: artistToUse))/" : ""
-    let artistFolderPath = getLyricsFolderPathConfig() + artistDirectory
-
+    let filePath = getLyricsFolderPathConfig() + secureFileName(fileName: (currentTrack ?? "\(artist) - \(title)")  + ".lrc")
     do {
-        if !FileManager.default.fileExists(atPath: artistFolderPath) {
-            try FileManager.default.createDirectory(atPath: artistFolderPath, withIntermediateDirectories: true, attributes: nil)
-        }
-
-        let filePath = artistFolderPath + secureFileName(fileName: fileName)
         try lyrics.write(toFile: filePath, atomically: true, encoding: .utf8)
         LogManager.shared.log("Lyrics saved to: \(filePath)")
     } catch {
@@ -436,7 +406,7 @@ func copyToClipboard(_ text: String) {
     let pasteboard = NSPasteboard.general
     pasteboard.clearContents()
     pasteboard.setString(text, forType: .string)
-    debugPrint("Lyrics copied to clipboard: \(text)")
+    LogManager.shared.log("Lyrics copied to clipboard: \(text)")
 }
 
 

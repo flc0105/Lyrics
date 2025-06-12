@@ -205,7 +205,7 @@ func handleNowPlayingInfoDidChangeNotification(notification: Notification) {
         if track == currentTrack {
             return
         } else {
-            debugPrint("Track change detected: \(String(describing: currentTrack)) -> \(track)")
+            LogManager.shared.log("Track change detected: \(String(describing: currentTrack)) -> \(track)")
             currentTrack = track
             currentTrackArtist = artist
             currentTrackTitle = title
@@ -231,7 +231,7 @@ func handleNowPlayingApplicationPlaybackStateDidChange(notification: Notificatio
     // Convert the raw playback state to a PlaybackState enum
     if let playbackState = PlaybackState(rawValue: rawPlaybackState) {
         // Print the detected playback state
-        debugPrint("Playback state change detected: \(playbackState)")
+        LogManager.shared.log("Playback state change detected: \(playbackState)")
         
         // Check the playback state and perform actions accordingly
         if playbackState == .playing {
