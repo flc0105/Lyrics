@@ -301,8 +301,16 @@ func startLyrics() {
         
         
         // Extract artist and title
-        let artist = nowPlayingInfo["Artist"] as? String ?? ""
-        let title = nowPlayingInfo["Title"] as? String ?? ""
+//        let artist = nowPlayingInfo["Artist"] as? String ?? ""
+//        let title = nowPlayingInfo["Title"] as? String ?? ""
+        
+        guard let artist = nowPlayingInfo["Artist"] as? String, !artist.isEmpty,
+              let title = nowPlayingInfo["Title"] as? String, !title.isEmpty else {
+            LogManager.shared.log("Missing or empty artist/title in nowPlayingInfo", level: .error)
+            return
+        }
+        
+        
         LogManager.shared.log("Currently playing: \(artist) - \(title)")
         
         // Get the path of the lyrics file
@@ -363,11 +371,13 @@ func fetchLyricsOnline(artist: String, title: String, playbackTime: TimeInterval
     guard UIPreferences.shared.willAutoDownloadLyrics else { return }
     LogManager.shared.log("Attempting to fetch lyrics online.")
     
-    getCurrentSongDuration { currentSongDuration in
+    getCurrentSongDuration { currentSongDuration in //FIXME: 如果在上一首歌暂停期间启动app，开始播放新曲时会继续执行上一曲的搜索，并且执行到这里的时候实际获取的是新曲的时长
         guard let currentSongDuration = currentSongDuration else {
             LogManager.shared.log("Failed to get current song duration.", level: .error)
             return
         }
+        
+        LogManager.shared.log("Current song duration: \(currentSongDuration)", level: .debug)
         
         searchSong(keyword: "\(artist) - \(title)") { result, error in
             guard let result = result, error == nil else {
@@ -488,7 +498,7 @@ private func attemptToDownloadLyricsFromSongs(songs: [Song], index: Int, playbac
             return
         }
         
-        LogManager.shared.log("songID:\(song.id), title:\(song.name), artist:\(song.artists), album:\(song.album.name), duration:\(song.duration)")
+        LogManager.shared.log("Lyrics downloaded: songID=\(song.id), title=\(song.name), artist=\(song.artists.first?.name ?? ""), album:\(song.album.name), duration:\(song.duration)")
         
         DispatchQueue.main.async {
             isStopped = false
