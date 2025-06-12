@@ -305,13 +305,16 @@ func startLyrics() {
 //        let title = nowPlayingInfo["Title"] as? String ?? ""
         
         guard let artist = nowPlayingInfo["Artist"] as? String, !artist.isEmpty,
-              let title = nowPlayingInfo["Title"] as? String, !title.isEmpty else {
+              let title = nowPlayingInfo["Title"] as? String, !title.isEmpty
+        
+        else {
             LogManager.shared.log("Missing or empty artist/title in nowPlayingInfo", level: .error)
             return
         }
         
+        let duration = nowPlayingInfo["Duration"] as? NSNumber
         
-        LogManager.shared.log("Currently playing: \(artist) - \(title)")
+        LogManager.shared.log("Currently playing: \(artist) - \(title), Duration:\(duration?.doubleValue ?? 0.0)") //FIXME: 如果在上一首歌暂停期间启动app，开始播放新曲时会继续执行上一曲的搜索，并且执行到这里的时候实际获取的是新曲的时长
         
         // Get the path of the lyrics file
         let lrcPath = getLyricsPath(artist: artist, title: title)
@@ -359,42 +362,66 @@ func startLyrics() {
                 LyricInfo(id: 0, text: "\(artist) - \(title)", isCurrent: true, playbackTime: 0, isTranslation: false),
                 LyricInfo(id: 1, text: "Lyrics not found.", isCurrent: false, playbackTime: 1, isTranslation: false)])
             
-            fetchLyricsOnline(artist: artist, title: title, playbackTime: playbackTime)
+            fetchLyricsOnline(artist: artist, title: title, duration: duration, playbackTime: playbackTime)
 
         }
     }
 }
 
 
-func fetchLyricsOnline(artist: String, title: String, playbackTime: TimeInterval) {
+func fetchLyricsOnline(artist: String, title: String, duration: NSNumber?, playbackTime: TimeInterval) {
     LogManager.shared.log("willAutoDownloadLyrics=\(UIPreferences.shared.willAutoDownloadLyrics)")
     guard UIPreferences.shared.willAutoDownloadLyrics else { return }
     LogManager.shared.log("Attempting to fetch lyrics online.")
     
-    getCurrentSongDuration { currentSongDuration in //FIXME: 如果在上一首歌暂停期间启动app，开始播放新曲时会继续执行上一曲的搜索，并且执行到这里的时候实际获取的是新曲的时长
-        guard let currentSongDuration = currentSongDuration else {
-            LogManager.shared.log("Failed to get current song duration.", level: .error)
+    searchSong(keyword: "\(artist) - \(title)") { result, error in
+        guard let result = result, error == nil else {
+            LogManager.shared.log("No suitable results found or error occurred: \(error?.localizedDescription ?? "Unknown error")", level: .error)
             return
         }
         
-        LogManager.shared.log("Current song duration: \(currentSongDuration)", level: .debug)
+        // 过滤掉与当前播放歌曲时长差异大于3秒的歌曲
+        let durationValue = duration?.doubleValue ?? 0.0
+        LogManager.shared.log("Current song duration: \(durationValue)")
+
+        let filteredSongs = result.songs.filter { abs(Double($0.duration)/1000 - durationValue) <= 3 }
+        LogManager.shared.log("Filtered songs: \(filteredSongs)")
         
-        searchSong(keyword: "\(artist) - \(title)") { result, error in
-            guard let result = result, error == nil else {
-                LogManager.shared.log("No suitable results found or error occurred: \(error?.localizedDescription ?? "Unknown error")", level: .error)
-                return
-            }
-            
-            // 过滤掉与当前播放歌曲时长差异大于3秒的歌曲
-            let filteredSongs = result.songs.filter { abs(Double($0.duration)/1000 - currentSongDuration) <= 3 }
-            LogManager.shared.log("Filtered songs: \(filteredSongs)")
-            
-            //尝试从过滤后的歌曲中下载歌词
-            attemptToDownloadLyricsFromSongs(songs: filteredSongs, index: 0, playbackTime: playbackTime, artist: artist, title: title)
-        }
-        
+        //尝试从过滤后的歌曲中下载歌词
+        attemptToDownloadLyricsFromSongs(songs: filteredSongs, index: 0, playbackTime: playbackTime, artist: artist, title: title)
     }
 }
+
+//
+//func fetchLyricsOnline(artist: String, title: String, duration: NSNumber?, playbackTime: TimeInterval) {
+//    LogManager.shared.log("willAutoDownloadLyrics=\(UIPreferences.shared.willAutoDownloadLyrics)")
+//    guard UIPreferences.shared.willAutoDownloadLyrics else { return }
+//    LogManager.shared.log("Attempting to fetch lyrics online.")
+//    
+//    getCurrentSongDuration { currentSongDuration in
+//        guard let currentSongDuration = currentSongDuration else {
+//            LogManager.shared.log("Failed to get current song duration.", level: .error)
+//            return
+//        }
+//        
+//        LogManager.shared.log("Current song duration: \(currentSongDuration)", level: .debug)
+//        
+//        searchSong(keyword: "\(artist) - \(title)") { result, error in
+//            guard let result = result, error == nil else {
+//                LogManager.shared.log("No suitable results found or error occurred: \(error?.localizedDescription ?? "Unknown error")", level: .error)
+//                return
+//            }
+//            
+//            // 过滤掉与当前播放歌曲时长差异大于3秒的歌曲
+//            let filteredSongs = result.songs.filter { abs(Double($0.duration)/1000 - currentSongDuration) <= 3 }
+//            LogManager.shared.log("Filtered songs: \(filteredSongs)")
+//            
+//            //尝试从过滤后的歌曲中下载歌词
+//            attemptToDownloadLyricsFromSongs(songs: filteredSongs, index: 0, playbackTime: playbackTime, artist: artist, title: title)
+//        }
+//        
+//    }
+//}
 
 
 func checkForLyricsUpdate(lrcContent: String, artist: String, title: String) {
@@ -498,7 +525,7 @@ private func attemptToDownloadLyricsFromSongs(songs: [Song], index: Int, playbac
             return
         }
         
-        LogManager.shared.log("Lyrics downloaded: songID=\(song.id), title=\(song.name), artist=\(song.artists.first?.name ?? ""), album:\(song.album.name), duration:\(song.duration)")
+        LogManager.shared.log("Lyrics downloaded: songID=\(song.id), title=\(song.name), artist=\(song.artists.first?.name ?? ""), album:\(song.album.name), duration:\(abs(Double(song.duration)/1000))")
         
         DispatchQueue.main.async {
             isStopped = false

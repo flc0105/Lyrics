@@ -114,6 +114,8 @@ func getNowPlayingInfo(completion: @escaping ([String: Any]) -> Void) {
         // Extract information from the result
         nowPlayingInfo["Artist"] = information["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
         nowPlayingInfo["Title"] = information["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
+        nowPlayingInfo["Duration"] = information["kMRMediaRemoteNowPlayingInfoDuration"] as? NSNumber
+
         //        nowPlayingInfo["ElapsedTime"] = information["kMRMediaRemoteNowPlayingInfoElapsedTime"] as? TimeInterval ?? 0.0
         
         if (UIPreferences.shared.isCoverImageVisible) {
