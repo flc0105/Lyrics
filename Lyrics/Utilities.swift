@@ -342,7 +342,6 @@ func isLyricsBlurEnabledConfig() -> Bool {
 }
 
 
-
 /// Secure a file name by replacing illegal characters with underscores.
 /// - Parameter fileName: The original file name to be secured.
 /// - Returns: The secured file name with illegal characters replaced by underscores.

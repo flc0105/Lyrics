@@ -22,6 +22,12 @@ class LyricsViewModel: ObservableObject {
     /// Published property holding the current index of the lyrics.
     @Published var currentIndex: Int = 0
     
+    // 在 LyricsViewModel 中添加
+    var maxVisibleLines: Int {
+        // 根据屏幕高度和行高计算，假设每行高度50，屏幕显示10行
+        return 10 // 或者根据实际情况计算
+    }
+    
 }
 
 /// The main view model instance for managing lyrics.
@@ -66,6 +72,7 @@ struct LyricsView: View {
             ScrollView {
                 ScrollViewReader { proxy in
                     VStack(spacing: 10) {
+              
                         ForEach(viewModel.lyrics) { lyric in
                             Text(lyric.text)
                                 .font(.system(size: 14)) // Set the font size
@@ -75,9 +82,11 @@ struct LyricsView: View {
                                 .padding(.horizontal, 10) // Add horizontal padding
                                 .frame(maxWidth: .infinity, alignment: .center) // Expand the frame to the maximum width
                                 .id(lyric.id)  // Set an identifier for the lyric
-//                                .opacity(lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric)) ? 1.0 : 0.8) // 修改这里：当前行和对应的翻译行不透明，其他行透明度变低
+                                .opacity(lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric)) ? 1.0 : 0.6) // 修改这里：当前行和对应的翻译行不透明，其他行透明度变低
 //                                .blur(radius: lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric)) ? 0 : 2) // 修改这里：当前行和对应的翻译行不模糊，其他行模糊
-                                .blur(radius: (lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric))) || !uiPreferences.isLyricsBlurEnabled ? 0 : 3)
+//                                .blur(radius: (lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric))) || !uiPreferences.isLyricsBlurEnabled ? 0 : 3)
+                                .blur(radius: (lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric))) || !uiPreferences.isLyricsBlurEnabled || lyric.playbackTime <= 1 ? 0 : 3)
+                            
                                 .animation(.easeInOut(duration: 0.3), value: lyric.isCurrent) // 添加过渡动画
                                 .onTapGesture {
                                     copyToClipboard(lyric.text)
@@ -85,6 +94,16 @@ struct LyricsView: View {
                                 }
                         }
                     }
+                    
+                    // 添加底部的占位行
+                                ForEach(0..<viewModel.maxVisibleLines / 2) { _ in
+                                    Text("")
+                                        .frame(height: 40)
+                                        .frame(maxWidth: .infinity)
+                                        .opacity(0)
+                                }
+                    
+                    
                     .onChange(of: lyricViewModel.currentIndex) { [oldValue = lyricViewModel.currentIndex] newValue in
                         
                         debugPrint("oldValue=\(oldValue), newValue=\(newValue)")
@@ -222,6 +241,8 @@ struct LyricsView: View {
         })
     }
     
+    
+    
     /// 检查是否是当前行的翻译行
     private func isTranslationCurrent(lyric: LyricInfo) -> Bool {
         guard lyric.isTranslation else { return false }
@@ -233,6 +254,9 @@ struct LyricsView: View {
         
         return false
     }
+    
+    
+
 
     
     /// Start a timer to update lyrics every second.
@@ -271,6 +295,8 @@ struct LyricsView: View {
         // Check if it's time to display the current lyric
         if currentPlaybackTime >= currentLyric.playbackTime {
             debugPrint("currentPlayBackTime=\(currentPlaybackTime), currentLyricPlaybackTime=\(currentLyric.playbackTime), currentIndex=\(lyricViewModel.currentIndex), currentLyricText=\(currentLyric.text)")
+
+            
             
             // Increase the lyric index
             lyricViewModel.currentIndex += 1

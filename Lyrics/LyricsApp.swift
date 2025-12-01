@@ -33,7 +33,7 @@ class UIPreferences: ObservableObject {
     @Published var willAutoCheckForLyricsUpdate: Bool = autoCheckForLyricsUpdate()
     
     @Published var isLyricsBlurEnabled: Bool = isLyricsBlurEnabledConfig()
-
+    
     
     /// A boolean indicating whether the window is sticky.
     @Published var isWindowSticky: Bool = false
@@ -404,6 +404,8 @@ func handleToggleLyricsBlur(isEnabled: Bool) {
     LogManager.shared.log("Setting changed: isLyricsBlurEnabled=\(UIPreferences.shared.isLyricsBlurEnabled)")
     UserDefaults.standard.set(UIPreferences.shared.isLyricsBlurEnabled, forKey: "IsLyricsBlurEnabled")
 }
+
+
 
 
 func handleActivateApp() {
