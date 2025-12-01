@@ -47,6 +47,7 @@ struct LyricsView: View {
         
         ZStack {
             GeometryReader { geometry in
+                
                 if let image = uiPreferences.coverImage {
                     Image(nsImage: image)
                         .resizable() // Make the image resizable
@@ -74,6 +75,10 @@ struct LyricsView: View {
                                 .padding(.horizontal, 10) // Add horizontal padding
                                 .frame(maxWidth: .infinity, alignment: .center) // Expand the frame to the maximum width
                                 .id(lyric.id)  // Set an identifier for the lyric
+//                                .opacity(lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric)) ? 1.0 : 0.8) // 修改这里：当前行和对应的翻译行不透明，其他行透明度变低
+//                                .blur(radius: lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric)) ? 0 : 2) // 修改这里：当前行和对应的翻译行不模糊，其他行模糊
+                                .blur(radius: (lyric.isCurrent || (lyric.isTranslation && isTranslationCurrent(lyric: lyric))) || !uiPreferences.isLyricsBlurEnabled ? 0 : 3)
+                                .animation(.easeInOut(duration: 0.3), value: lyric.isCurrent) // 添加过渡动画
                                 .onTapGesture {
                                     copyToClipboard(lyric.text)
                                     isCopiedAlertPresented = true
@@ -125,6 +130,7 @@ struct LyricsView: View {
         
         .onAppear {
             startTimer()
+            
         }
         .onHover { hovering in
             isHovered = hovering
@@ -216,6 +222,18 @@ struct LyricsView: View {
         })
     }
     
+    /// 检查是否是当前行的翻译行
+    private func isTranslationCurrent(lyric: LyricInfo) -> Bool {
+        guard lyric.isTranslation else { return false }
+        
+        // 查找对应的原文行
+        if let originalIndex = viewModel.lyrics.firstIndex(where: { $0.id == lyric.id - 1 && !$0.isTranslation }) {
+            return viewModel.lyrics[originalIndex].isCurrent
+        }
+        
+        return false
+    }
+
     
     /// Start a timer to update lyrics every second.
     private func startTimer() {
@@ -314,7 +332,8 @@ func startLyrics() {
         
         let duration = nowPlayingInfo["Duration"] as? NSNumber
         
-        LogManager.shared.log("Currently playing: \(artist) - \(title), Duration:\(duration?.doubleValue ?? 0.0)") //FIXME: 如果在上一首歌暂停期间启动app，开始播放新曲时会继续执行上一曲的搜索，并且执行到这里的时候实际获取的是新曲的时长
+        LogManager.shared.log("Currently playing: \(artist) - \(title), Duration:\(duration?.doubleValue ?? 0.0)")
+        //FIXME: 如果在上一首歌暂停期间启动app，开始播放新曲时会继续执行上一曲的搜索，并且执行到这里的时候实际获取的是新曲的时长
         
         // Get the path of the lyrics file
         let lrcPath = getLyricsPath(artist: artist, title: title)

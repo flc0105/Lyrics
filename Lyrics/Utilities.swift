@@ -337,6 +337,10 @@ func autoCheckForLyricsUpdate() -> Bool {
     return UserDefaults.standard.bool(forKey: "autoCheckForLyricsUpdate")
 }
 
+func isLyricsBlurEnabledConfig() -> Bool {
+    return UserDefaults.standard.bool(forKey: "IsLyricsBlurEnabled")
+}
+
 
 
 /// Secure a file name by replacing illegal characters with underscores.

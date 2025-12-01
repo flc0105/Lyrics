@@ -32,6 +32,9 @@ class UIPreferences: ObservableObject {
     
     @Published var willAutoCheckForLyricsUpdate: Bool = autoCheckForLyricsUpdate()
     
+    @Published var isLyricsBlurEnabled: Bool = isLyricsBlurEnabledConfig()
+
+    
     /// A boolean indicating whether the window is sticky.
     @Published var isWindowSticky: Bool = false
     
@@ -44,6 +47,7 @@ class UIPreferences: ObservableObject {
     
     /// The type of the toast, which determines its appearance and behavior.
     @Published var toastType: AlertToast.AlertType = .regular;
+
 }
 
 
@@ -395,6 +399,12 @@ func handleToggleAutoCheckForLyircsUpdate(isEnabled: Bool) {
     UserDefaults.standard.set(UIPreferences.shared.willAutoCheckForLyricsUpdate, forKey: "autoCheckForLyricsUpdate")
 }
 
+func handleToggleLyricsBlur(isEnabled: Bool) {
+    UIPreferences.shared.isLyricsBlurEnabled = isEnabled
+    LogManager.shared.log("Setting changed: isLyricsBlurEnabled=\(UIPreferences.shared.isLyricsBlurEnabled)")
+    UserDefaults.standard.set(UIPreferences.shared.isLyricsBlurEnabled, forKey: "IsLyricsBlurEnabled")
+}
+
 
 func handleActivateApp() {
     // 如果窗口最小化，先将窗口还原
@@ -451,6 +461,14 @@ struct LyricsApp: App {
                     },
                     set: { isEnabled in
                         handleToggleShowPlaybackProgress(isEnabled: isEnabled)
+                    }
+                ))
+                Toggle("Enable Lyrics Blur", isOn: Binding<Bool>(
+                    get: {
+                        return uiPreferences.isLyricsBlurEnabled
+                    },
+                    set: { isEnabled in
+                        handleToggleLyricsBlur(isEnabled: isEnabled)
                     }
                 ))
             }
